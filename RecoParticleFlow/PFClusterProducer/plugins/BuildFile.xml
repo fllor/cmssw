@@ -18,6 +18,32 @@
   <flags EDM_PLUGIN="1"/>
 </library>
 
+<library name="RecoParticleFlowPFClusterProducerPortablePlugins" file="alpaka/*.cc">
+  <use name="alpaka"/>
+  <use name="CondFormats/HcalObjects"/>
+  <use name="CondFormats/EcalObjects"/>
+  <use name="CondFormats/DataRecord"/>
+  <use name="DataFormats/EcalDetId"/>
+  <use name="DataFormats/EcalRecHit"/>
+  <use name="DataFormats/HcalDetId"/>
+  <use name="DataFormats/HcalRecHit"/>
+  <use name="DataFormats/Math"/>
+  <use name="DataFormats/ParticleFlowReco"/>
+  <use name="FWCore/Framework"/>
+  <use name="FWCore/MessageLogger"/>
+  <use name="FWCore/ParameterSet"/>
+  <use name="Geometry/CaloGeometry"/>
+  <use name="Geometry/CaloTopology"/>
+  <use name="Geometry/Records"/>
+  <use name="RecoParticleFlow/PFClusterProducer"/>
+  <use name="HeterogeneousCore/AlpakaCore"/>
+  <use name="HeterogeneousCore/AlpakaInterface"/>
+  <use name="HeterogeneousCore/AlpakaTest"/>
+  <flags ALPAKA_BACKENDS="serial"/>
+  <flags EDM_PLUGIN="1"/>
+</library>
+
+
 <library name="RecoParticleFlowPFClusterProducerPlugins_simmappers" file="SimMappers/*.cc">
   <use name="CondFormats/HcalObjects"/>
   <use name="CondFormats/EcalObjects"/>
