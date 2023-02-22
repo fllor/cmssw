@@ -186,9 +186,9 @@ process.hltParticleFlowRecHitHBHE = cms.EDProducer("PFRecHitProducer",
 )
 
 # Alpaka producer
-process.hltParticleFlowRecHitHBHEAlpaka = cms.EDProducer("PFHBHERecHitProducerAlpaka",
+process.hltParticleFlowRecHitHBHEAlpaka = cms.EDProducer("alpaka_serial_sync::PFHBHERecHitProducerAlpaka",
     navigator = process.hltParticleFlowRecHitHBHE.navigator,
-    producers = process.hltParticleFlowRecHitHBHE.producers
+    src = cms.InputTag("hltHbherecoFromGPU")
 )
 
 #

@@ -60,7 +60,7 @@ namespace {
 }  // namespace
 
 PFHBHERecHitProducerAlpaka::PFHBHERecHitProducerAlpaka(const edm::ParameterSet& iConfig) :
-  recHitToken(consumes<IProductType>(iConfig.getParameter<std::string>("producer_src"))),
+  recHitToken(consumes<IProductType>(iConfig.getParameter<std::string>("src"))),
   pfRecHitToken(produces()),
   pfRecHitTokenCleaned(produces("Cleaned")) {
   //produces<reco::PFRecHitCollection>();
