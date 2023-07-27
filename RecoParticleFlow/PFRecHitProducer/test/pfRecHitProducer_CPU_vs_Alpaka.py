@@ -326,29 +326,25 @@ process.htlParticleFlowAlpakaToLegacyPFRecHitsComparison2 = DQMEDAnalyzer("PFRec
 # Additional customization
 process.FEVTDEBUGHLToutput.outputCommands = cms.untracked.vstring('drop  *_*_*_*')
 process.FEVTDEBUGHLToutput.outputCommands.append('keep *_*ParticleFlow*HBHE*_*_*')
-process.FEVTDEBUGHLToutput.outputCommands.append('keep *_*HbherecoLegacy*_*_*')
+#process.FEVTDEBUGHLToutput.outputCommands.append('keep *_*HbherecoLegacy*_*_*')
 #process.FEVTDEBUGHLToutput.outputCommands.append('keep *_*HbherecoFromGPU*_*_*')
-process.FEVTDEBUGHLToutput.outputCommands.append('keep *_*Hbhereco*_*_*')
+#process.FEVTDEBUGHLToutput.outputCommands.append('keep *_*Hbhereco*_*_*')
 process.FEVTDEBUGHLToutput.outputCommands.append('keep *_hltParticleFlowRecHitToSoA_*_*')
 process.FEVTDEBUGHLToutput.outputCommands.append('keep *_hltParticleFlowPFRecHitAlpaka_*_*')
 
-#
-# Run only localreco, PFRecHit and PFCluster producers for HBHE only
-#process.source.fileNames = cms.untracked.vstring('file:/cms/data/hatake/ana/PF/GPU/CMSSW_12_4_0_v2/src/test/v21/GPU/reHLT_HLT.root ')
-
 # Path/sequence definitions
 process.HBHEPFCPUGPUTask = cms.Path(
-    process.hltHcalDigis
-    +process.hltHbherecoLegacy
-    +process.hltParticleFlowRecHitHBHE      # Construct PFRecHits on CPU
+    #process.hltHcalDigis                    # Not necessary, since HCAL recHits are already included in input file
+    #+process.hltHbherecoLegacy              # Not necessary, since HCAL recHits are already included in input file
+    process.hltParticleFlowRecHitHBHE       # Construct PFRecHits on CPU
     +process.hltParticleFlowRecHitToSoA     # Convert legacy CaloRecHits to SoA and copy to device
     +process.hltParticleFlowPFRecHitAlpaka  # Construct PFRecHits on device
     +process.hltParticleFlowPFRecHitComparison  # Validate Alpaka vs CPU
     +process.htlParticleFlowAlpakaToLegacyPFRecHits             # Convert Alpaka PFRecHits to legacy format
     +process.htlParticleFlowAlpakaToLegacyPFRecHitsComparison1  # Validate legacy-format-from-alpaka vs regular legacy format
     +process.htlParticleFlowAlpakaToLegacyPFRecHitsComparison2  # Validate Alpaka format vs legacy-format-from-alpaka
-    #+process.hltHcalDigisGPU
-    #+process.hltHbherecoGPU
+    #+process.hltHcalDigisGPU                                    # Construct HCAL recHits in CUDA format
+    #+process.hltHbherecoGPU                                     # Construct HCAL recHits in CUDA format
     #+process.hltParticleFlowRecHitHBHEonGPU                     # Construct CUDA PFRecHits (and legacy format)
     #+process.htlParticleFlowAlpakaToLegacyPFRecHitsComparison3  # Validate legacy format vs legacy-format-from-CUDA
 )

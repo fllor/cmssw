@@ -28,9 +28,8 @@ process.load('Configuration.StandardSequences.Accelerators_cff')
 process.load('HeterogeneousCore.AlpakaCore.ProcessAcceleratorAlpaka_cfi')
 
 process.maxEvents = cms.untracked.PSet(
-    #input = cms.untracked.int32(5),
-    #input = cms.untracked.int32(100),
-    input = cms.untracked.int32(10000),
+    input = cms.untracked.int32(1300),
+    #input = cms.untracked.int32(10000),
     output = cms.optional.untracked.allowed(cms.int32,cms.PSet)
 )
 
