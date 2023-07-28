@@ -242,7 +242,7 @@ process.hltParticleFlowRecHitParamsESProducer = cms.ESProducer(alpaka_backend_st
 process.hltParticleFlowRecHitTopologyESProducer = cms.ESProducer(alpaka_backend_str % "PFRecHitHBHETopologyESProducer",
     hcalEnums = cms.vint32(1, 2)
 )
-process.hltParticleFlowPFRecHitAlpaka = cms.EDProducer(alpaka_backend_str % "PFRecHitProducerAlpaka",
+process.hltParticleFlowPFRecHitAlpaka = cms.EDProducer(alpaka_backend_str % "PFRecHitProducerAlpakaHCAL",
     src = cms.InputTag("hltParticleFlowRecHitToSoA"),
     params = cms.ESInputTag("hltParticleFlowRecHitParamsESProducer:"),
     topology = cms.ESInputTag("hltParticleFlowRecHitTopologyESProducer:"),

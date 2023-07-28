@@ -12,10 +12,14 @@
 #include "RecoParticleFlow/PFRecHitProducer/interface/JobConfigurationAlpakaRecord.h"
 #include "RecoParticleFlow/PFRecHitProducer/interface/PFRecHitHBHETopologyAlpakaESRcd.h"
 #include "RecoParticleFlow/PFRecHitProducer/interface/alpaka/PFRecHitProducerKernel.h"
+#include "RecoParticleFlow/PFRecHitProducer/interface/alpaka/HCAL_ECAL_definitions.h"
 
 #define DEBUG false
 
 namespace ALPAKA_ACCELERATOR_NAMESPACE {
+  using namespace  ParticleFlowRecHitProducerAlpaka;
+
+  template<typename CAL>
   class PFRecHitProducerAlpaka : public stream::EDProducer<> {
   public:
     PFRecHitProducerAlpaka(edm::ParameterSet const& config) :
@@ -34,7 +38,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
       PFRecHitDeviceCollection pfRecHits{num_recHits, event.queue()};
 
       if(!kernel)
-        kernel.emplace(PFRecHitProducerKernel::Construct(event.queue()));
+        kernel.emplace(PFRecHitProducerKernel<CAL>::Construct(event.queue()));
       kernel->execute(event.device(), event.queue(), params, topology, recHits, pfRecHits);
 
       if(synchronise)
@@ -58,10 +62,13 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
     const device::EDGetToken<CaloRecHitDeviceCollection> recHitsToken;
     const device::EDPutToken<PFRecHitDeviceCollection> pfRecHitsToken;
     const bool synchronise;
-    std::optional<PFRecHitProducerKernel> kernel = {};
+    std::optional<PFRecHitProducerKernel<CAL>> kernel = {};
   };
 
+  using PFRecHitProducerAlpakaHCAL = PFRecHitProducerAlpaka<HCAL>;
+  using PFRecHitProducerAlpakaECAL = PFRecHitProducerAlpaka<ECAL>;
 }  // namespace ALPAKA_ACCELERATOR_NAMESPACE
 
 #include "HeterogeneousCore/AlpakaCore/interface/alpaka/MakerMacros.h"
-DEFINE_FWK_ALPAKA_MODULE(PFRecHitProducerAlpaka);
+DEFINE_FWK_ALPAKA_MODULE(PFRecHitProducerAlpakaHCAL);
+DEFINE_FWK_ALPAKA_MODULE(PFRecHitProducerAlpakaECAL);

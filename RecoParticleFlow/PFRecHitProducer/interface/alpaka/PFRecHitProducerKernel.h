@@ -6,15 +6,16 @@
 #include "RecoParticleFlow/PFRecHitProducer/interface/alpaka/PFRecHitHBHEParamsAlpakaESData.h"
 #include "RecoParticleFlow/PFRecHitProducer/interface/alpaka/PFRecHitHBHETopologyAlpakaESData.h"
 #include "HeterogeneousCore/AlpakaInterface/interface/config.h"
+#include "RecoParticleFlow/PFRecHitProducer/interface/alpaka/HCAL_ECAL_definitions.h"
 
 namespace ALPAKA_ACCELERATOR_NAMESPACE {
-
+  template<typename CAL>
   class PFRecHitProducerKernel {
   public:
     static PFRecHitProducerKernel Construct(Queue& queue);
 
     void execute(const Device& device, Queue& queue,
-      const PFRecHitHBHEParamsAlpakaESDataDevice& params,
+      const typename CAL::ParameterType& params,
       const PFRecHitHBHETopologyAlpakaESDataDevice& topology,
       const CaloRecHitDeviceCollection& recHits,
       PFRecHitDeviceCollection& collection);
