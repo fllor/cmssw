@@ -6,11 +6,13 @@
 #include "HeterogeneousCore/AlpakaInterface/interface/config.h"
 #include "HeterogeneousCore/AlpakaInterface/interface/memory.h"
 
-#include "RecoParticleFlow/PFRecHitProducer/interface/PFRecHitHBHEParamsAlpakaESDataSoA.h"
+#include "RecoParticleFlow/PFRecHitProducer/interface/PFRecHitParamsAlpakaESDataSoA.h"
 
 namespace reco {
 
-  using PFRecHitHBHEParamsAlpakaESDataHost = PortableHostCollection<PFRecHitHBHEParamsAlpakaESDataSoA>;
+  using PFRecHitHCALParamsAlpakaESDataHost = PortableHostCollection<PFRecHitHCALParamsAlpakaESDataSoA>;
+
+  using PFRecHitECALParamsAlpakaESDataHost = PortableHostCollection<PFRecHitECALParamsAlpakaESDataSoA>;
 
 }
 

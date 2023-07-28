@@ -235,7 +235,7 @@ process.pfRecHitHBHETopologyAlpakaESRcdESSource = cms.ESSource('EmptyESSource',
   iovIsRunNotTime = cms.bool(True),
   firstValid = cms.vuint32(1)
 )
-process.hltParticleFlowRecHitParamsESProducer = cms.ESProducer(alpaka_backend_str % "PFRecHitHBHEParamsESProducer",
+process.hltParticleFlowRecHitParamsESProducer = cms.ESProducer(alpaka_backend_str % "PFRecHitHCALParamsESProducer",
     energyThresholdsHB = cms.vdouble( 0.1, 0.2, 0.3, 0.3 ),
     energyThresholdsHE = cms.vdouble( 0.1, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2 )
 )

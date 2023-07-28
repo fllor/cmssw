@@ -71,8 +71,8 @@ process.pfRecHitHBHETopologyAlpakaESRcdESSource = cms.ESSource('EmptyESSource',
   firstValid = cms.vuint32(1)
 )
 
-from RecoParticleFlow.PFRecHitProducer.pfRecHitHBHEParamsESProducer_cfi import pfRecHitHBHEParamsESProducer as _pfRecHitHBHEParamsESProducer
-process.pfRecHitHBHEParamsESProducer = _pfRecHitHBHEParamsESProducer.clone(
+from RecoParticleFlow.PFRecHitProducer.pfRecHitHCALParamsESProducer_cfi import pfRecHitHCALParamsESProducer as _pfRecHitHCALParamsESProducer
+process.pfRecHitHCALParamsESProducer = _pfRecHitHCALParamsESProducer.clone(
   appendToDataLabel = args.esProductLabel,
   energyThresholdsHB = [0.1, 0.2, 0.3, 0.4],
   energyThresholdsHE = [0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.1],
@@ -85,7 +85,7 @@ process.pfRecHitHBHETopologyESProducer = _pfRecHitHBHETopologyESProducer.clone(
 
 from RecoParticleFlow.PFRecHitProducer.testPFRecHitHBHETestProducer_cfi import testPFRecHitHBHETestProducer as _testPFRecHitHBHETestProducer
 process.testPFRecHitHBHETestProducer = _testPFRecHitHBHETestProducer.clone(
-  pfRecHitParams = 'pfRecHitHBHEParamsESProducer:'+args.esProductLabel,
+  pfRecHitParams = 'pfRecHitHCALParamsESProducer:'+args.esProductLabel,
   pfRecHitTopology = 'pfRecHitHBHETopologyESProducer:'+args.esProductLabel
 )
 
@@ -101,7 +101,7 @@ if args.useSequence:
     process.testSequence += process.testEmptyAnalyzer
   process.testPath = cms.Path( process.testSequence )
 else:
-  process.testTask = cms.Task( process.pfRecHitHBHEParamsESProducer, process.testPFRecHitHBHETestProducer )
+  process.testTask = cms.Task( process.pfRecHitHCALParamsESProducer, process.testPFRecHitHBHETestProducer )
   process.testSequence = cms.Sequence()
   if args.useAnalyzer:
     process.testSequence += process.testEmptyAnalyzer

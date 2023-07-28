@@ -7,7 +7,7 @@
 #include "HeterogeneousCore/AlpakaCore/interface/alpaka/EDPutToken.h"
 #include "HeterogeneousCore/AlpakaCore/interface/alpaka/ESGetToken.h"
 #include "HeterogeneousCore/AlpakaInterface/interface/config.h"
-#include "RecoParticleFlow/PFRecHitProducer/interface/alpaka/PFRecHitHBHEParamsAlpakaESData.h"
+#include "RecoParticleFlow/PFRecHitProducer/interface/alpaka/PFRecHitParamsAlpakaESData.h"
 #include "RecoParticleFlow/PFRecHitProducer/interface/alpaka/PFRecHitHBHETopologyAlpakaESData.h"
 #include "RecoParticleFlow/PFRecHitProducer/interface/JobConfigurationAlpakaRecord.h"
 #include "RecoParticleFlow/PFRecHitProducer/interface/PFRecHitHBHETopologyAlpakaESRcd.h"
@@ -37,13 +37,13 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
 
     static void fillDescriptions(edm::ConfigurationDescriptions& descriptions) {
       edm::ParameterSetDescription desc;
-      desc.add<edm::ESInputTag>("pfRecHitParams", edm::ESInputTag("pfRecHitHBHEParamsESProducer", ""));
+      desc.add<edm::ESInputTag>("pfRecHitParams", edm::ESInputTag("pfRecHitHCALParamsESProducer", ""));
       desc.add<edm::ESInputTag>("pfRecHitTopology", edm::ESInputTag("pfRecHitHBHETopologyESProducer", ""));
       descriptions.addWithDefaultLabel(desc);
     }
 
   private:
-    device::ESGetToken<PFRecHitHBHEParamsAlpakaESDataDevice, JobConfigurationAlpakaRecord> const esParamsToken_;
+    device::ESGetToken<PFRecHitHCALParamsAlpakaESDataDevice, JobConfigurationAlpakaRecord> const esParamsToken_;
     device::ESGetToken<PFRecHitHBHETopologyAlpakaESDataDevice, PFRecHitHBHETopologyAlpakaESRcd> const esTopoToken_;
     device::EDPutToken<portabletest::TestDeviceCollection> devicePutToken_;
 

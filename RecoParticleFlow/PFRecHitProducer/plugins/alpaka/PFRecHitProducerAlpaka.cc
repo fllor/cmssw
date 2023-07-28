@@ -7,12 +7,12 @@
 #include "FWCore/Utilities/interface/InputTag.h"
 #include "DataFormats/ParticleFlowReco_Alpaka/interface/alpaka/PFRecHitDeviceCollection.h"
 #include "DataFormats/ParticleFlowReco_Alpaka/interface/alpaka/CaloRecHitDeviceCollection.h"
-#include "RecoParticleFlow/PFRecHitProducer/interface/alpaka/PFRecHitHBHEParamsAlpakaESData.h"
+#include "RecoParticleFlow/PFRecHitProducer/interface/alpaka/PFRecHitParamsAlpakaESData.h"
 #include "RecoParticleFlow/PFRecHitProducer/interface/alpaka/PFRecHitHBHETopologyAlpakaESData.h"
 #include "RecoParticleFlow/PFRecHitProducer/interface/JobConfigurationAlpakaRecord.h"
 #include "RecoParticleFlow/PFRecHitProducer/interface/PFRecHitHBHETopologyAlpakaESRcd.h"
 #include "RecoParticleFlow/PFRecHitProducer/interface/alpaka/PFRecHitProducerKernel.h"
-#include "RecoParticleFlow/PFRecHitProducer/interface/alpaka/HCAL_ECAL_definitions.h"
+#include "RecoParticleFlow/PFRecHitProducer/interface/alpaka/CalorimeterDefinitions.h"
 
 #define DEBUG false
 
@@ -31,7 +31,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
     {}
 
     void produce(device::Event& event, device::EventSetup const& setup) override {
-      const PFRecHitHBHEParamsAlpakaESDataDevice& params = setup.getData(paramsToken);
+      const typename CAL::ParameterType& params = setup.getData(paramsToken);
       const PFRecHitHBHETopologyAlpakaESDataDevice& topology = setup.getData(topologyToken);
       const CaloRecHitDeviceCollection& recHits = event.get(recHitsToken);
       const int num_recHits = recHits->metadata().size();
@@ -57,7 +57,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
     }
 
   private:
-    const device::ESGetToken<PFRecHitHBHEParamsAlpakaESDataDevice, JobConfigurationAlpakaRecord> paramsToken;
+    const device::ESGetToken<typename CAL::ParameterType, JobConfigurationAlpakaRecord> paramsToken;
     const device::ESGetToken<PFRecHitHBHETopologyAlpakaESDataDevice, PFRecHitHBHETopologyAlpakaESRcd> topologyToken;
     const device::EDGetToken<CaloRecHitDeviceCollection> recHitsToken;
     const device::EDPutToken<PFRecHitDeviceCollection> pfRecHitsToken;

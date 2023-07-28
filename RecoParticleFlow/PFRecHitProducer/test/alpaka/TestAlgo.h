@@ -3,14 +3,14 @@
 
 #include "HeterogeneousCore/AlpakaInterface/interface/config.h"
 #include "RecoParticleFlow/PFRecHitProducer/interface/alpaka/PFRecHitHBHETopologyAlpakaESData.h"
-#include "RecoParticleFlow/PFRecHitProducer/interface/alpaka/PFRecHitHBHEParamsAlpakaESData.h"
+#include "RecoParticleFlow/PFRecHitProducer/interface/alpaka/PFRecHitParamsAlpakaESData.h"
 
 namespace ALPAKA_ACCELERATOR_NAMESPACE {
 
   class TestAlgo {
   public:
     void printPFRecHitHBHEESData(Queue& queue,
-      PFRecHitHBHEParamsAlpakaESDataDevice const& esParams, PFRecHitHBHETopologyAlpakaESDataDevice const& esTopo) const;
+      PFRecHitHCALParamsAlpakaESDataDevice const& esParams, PFRecHitHBHETopologyAlpakaESDataDevice const& esTopo) const;
   };
 
 }  // namespace ALPAKA_ACCELERATOR_NAMESPACE

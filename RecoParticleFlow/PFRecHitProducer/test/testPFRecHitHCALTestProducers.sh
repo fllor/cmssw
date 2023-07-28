@@ -1,6 +1,6 @@
 #!/bin/bash
 
-EXECMD="cmsRun RecoParticleFlow/PFRecHitProducer/test/testPFRecHitHBHETestProducers_cfg.py"
+EXECMD="cmsRun RecoParticleFlow/PFRecHitProducer/test/testPFRecHitHCALTestProducers_cfg.py"
 
 function run_test(){
   echo "TEST:" $@

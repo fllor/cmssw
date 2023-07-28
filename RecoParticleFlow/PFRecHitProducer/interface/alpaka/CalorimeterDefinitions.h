@@ -1,5 +1,5 @@
-#ifndef RecoParticleFlow_PFRecHitProducer_CALdefinitions_h
-#define RecoParticleFlow_PFRecHitProducer_CALdefinitions_h
+#ifndef RecoParticleFlow_PFRecHitProducer_alpaka_CALdefinitions_h
+#define RecoParticleFlow_PFRecHitProducer_alpaka_CALdefinitions_h
 
 #include <alpaka/alpaka.hpp>
 
@@ -8,7 +8,7 @@
 #include "DataFormats/HcalDetId/interface/HcalSubdetector.h"
 #include "DataFormats/EcalDetId/interface/EcalSubdetector.h"
 
-#include "RecoParticleFlow/PFRecHitProducer/interface/alpaka/PFRecHitHBHEParamsAlpakaESData.h"
+#include "RecoParticleFlow/PFRecHitProducer/interface/alpaka/PFRecHitParamsAlpakaESData.h"
 #include "RecoParticleFlow/PFRecHitProducer/interface/alpaka/PFRecHitHBHETopologyAlpakaESData.h"
 
 
@@ -22,7 +22,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
 
     // These are structs rather than namespaces, such that they can be used as template arguments
     struct HCAL {
-      using ParameterType = PFRecHitHBHEParamsAlpakaESDataDevice;
+      using ParameterType = PFRecHitHCALParamsAlpakaESDataDevice;
       static constexpr uint32_t maxDepthHB = 4;
       static constexpr uint32_t maxDepthHE = 7;
       static constexpr uint32_t firstHBRing = 1;
@@ -98,7 +98,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
       }
     };
     struct ECAL {
-      using ParameterType = PFRecHitHBHEParamsAlpakaESDataDevice; // TODO energy thresholds
+      using ParameterType = PFRecHitECALParamsAlpakaESDataDevice; // TODO energy thresholds
 
       // https://cmssdt.cern.ch/lxr/source/DataFormats/EcalRecHit/interface/EcalRecHit.h#0021
       enum Flags {
