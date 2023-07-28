@@ -60,7 +60,7 @@ process.load('Configuration.StandardSequences.Accelerators_cff')
 process.load('HeterogeneousCore.AlpakaCore.ProcessAcceleratorAlpaka_cfi')
 
 process.jobConfAlpakaRcdESSource = cms.ESSource('EmptyESSource',
-  recordName = cms.string('JobConfigurationAlpakaRecord'),
+  recordName = cms.string('PFRecHitHCALParamsRecord'),
   iovIsRunNotTime = cms.bool(True),
   firstValid = cms.vuint32(1)
 )

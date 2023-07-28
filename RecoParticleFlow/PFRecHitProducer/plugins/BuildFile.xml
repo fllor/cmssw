@@ -29,6 +29,8 @@
   <use name="HeterogeneousCore/AlpakaCore"/>
   <use name="HeterogeneousCore/AlpakaInterface"/>
   <use name="RecoParticleFlow/PFRecHitProducer"/>
+  <use name="CondFormats/EcalObjects"/>
+  <use name="CondFormats/DataRecord"/>
   <flags ALPAKA_BACKENDS="1"/>
   <flags EDM_PLUGIN="1"/>
 </library>

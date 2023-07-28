@@ -14,7 +14,6 @@
 #include "HeterogeneousCore/AlpakaInterface/interface/memory.h"
 
 #include "RecoParticleFlow/PFClusterProducer/interface/PFHCALDenseIdNavigatorCore.h"
-#include "RecoParticleFlow/PFRecHitProducer/interface/JobConfigurationAlpakaRecord.h"
 #include "RecoParticleFlow/PFRecHitProducer/interface/PFRecHitHBHETopologyAlpakaESRcd.h"
 #include "RecoParticleFlow/PFRecHitProducer/interface/alpaka/PFRecHitHBHETopologyAlpakaESData.h"
 

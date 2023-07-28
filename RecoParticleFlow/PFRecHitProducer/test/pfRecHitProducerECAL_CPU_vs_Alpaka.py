@@ -171,10 +171,10 @@ if(args.debug and args.threads != 1):
 ##    Legacy PFRecHit producer     ##
 #####################################
 qualityTestsECAL = cms.VPSet(
-    #cms.PSet(
-    #    name = cms.string("PFRecHitQTestDBThreshold"),
-    #    applySelectionsToAllCrystals=cms.bool(True),
-    #),
+    cms.PSet(
+        name = cms.string("PFRecHitQTestDBThreshold"),
+        applySelectionsToAllCrystals=cms.bool(True),
+    ),
     cms.PSet(
         name = cms.string("PFRecHitQTestECAL"),
         cleaningThreshold = cms.double(2.0),
@@ -226,7 +226,7 @@ process.hltParticleFlowRecHitToSoA = cms.EDProducer(alpaka_backend_str % "ECaloR
 
 # Construct PFRecHitsSoA
 process.jobConfAlpakaRcdESSource = cms.ESSource('EmptyESSource',
-    recordName = cms.string('JobConfigurationAlpakaRecord'),
+    recordName = cms.string('PFRecHitECALParamsRecord'),
     iovIsRunNotTime = cms.bool(True),
     firstValid = cms.vuint32(1)
 )
@@ -235,10 +235,7 @@ process.pfRecHitHBHETopologyAlpakaESRcdESSource = cms.ESSource('EmptyESSource',
   iovIsRunNotTime = cms.bool(True),
   firstValid = cms.vuint32(1)
 )
-process.hltParticleFlowRecHitParamsESProducer = cms.ESProducer(alpaka_backend_str % "PFRecHitHCALParamsESProducer",
-    energyThresholdsHB = cms.vdouble( 0.1, 0.2, 0.3, 0.3 ),
-    energyThresholdsHE = cms.vdouble( 0.1, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2 )
-)
+process.hltParticleFlowRecHitParamsESProducer = cms.ESProducer(alpaka_backend_str % "PFRecHitECALParamsESProducer")
 process.hltParticleFlowRecHitTopologyESProducer = cms.ESProducer(alpaka_backend_str % "PFRecHitHBHETopologyESProducer",
     hcalEnums = cms.vint32(1, 2)
 )

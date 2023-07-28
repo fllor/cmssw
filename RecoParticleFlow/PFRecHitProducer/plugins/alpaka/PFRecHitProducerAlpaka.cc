@@ -7,9 +7,7 @@
 #include "FWCore/Utilities/interface/InputTag.h"
 #include "DataFormats/ParticleFlowReco_Alpaka/interface/alpaka/PFRecHitDeviceCollection.h"
 #include "DataFormats/ParticleFlowReco_Alpaka/interface/alpaka/CaloRecHitDeviceCollection.h"
-#include "RecoParticleFlow/PFRecHitProducer/interface/alpaka/PFRecHitParamsAlpakaESData.h"
 #include "RecoParticleFlow/PFRecHitProducer/interface/alpaka/PFRecHitHBHETopologyAlpakaESData.h"
-#include "RecoParticleFlow/PFRecHitProducer/interface/JobConfigurationAlpakaRecord.h"
 #include "RecoParticleFlow/PFRecHitProducer/interface/PFRecHitHBHETopologyAlpakaESRcd.h"
 #include "RecoParticleFlow/PFRecHitProducer/interface/alpaka/PFRecHitProducerKernel.h"
 #include "RecoParticleFlow/PFRecHitProducer/interface/alpaka/CalorimeterDefinitions.h"
@@ -17,7 +15,7 @@
 #define DEBUG false
 
 namespace ALPAKA_ACCELERATOR_NAMESPACE {
-  using namespace  ParticleFlowRecHitProducerAlpaka;
+  using namespace ParticleFlowRecHitProducerAlpaka;
 
   template<typename CAL>
   class PFRecHitProducerAlpaka : public stream::EDProducer<> {
@@ -57,7 +55,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
     }
 
   private:
-    const device::ESGetToken<typename CAL::ParameterType, JobConfigurationAlpakaRecord> paramsToken;
+    const device::ESGetToken<typename CAL::ParameterType,typename CAL::ParameterRecordType> paramsToken;
     const device::ESGetToken<PFRecHitHBHETopologyAlpakaESDataDevice, PFRecHitHBHETopologyAlpakaESRcd> topologyToken;
     const device::EDGetToken<CaloRecHitDeviceCollection> recHitsToken;
     const device::EDPutToken<PFRecHitDeviceCollection> pfRecHitsToken;

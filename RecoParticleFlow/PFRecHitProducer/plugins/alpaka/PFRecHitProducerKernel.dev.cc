@@ -7,7 +7,7 @@
 
 
 namespace ALPAKA_ACCELERATOR_NAMESPACE {
-  using namespace  ParticleFlowRecHitProducerAlpaka;
+  using namespace ParticleFlowRecHitProducerAlpaka;
 
   template<typename CAL>
   class PFRecHitProducerKernelImpl1 {
@@ -56,7 +56,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
   template<> ALPAKA_FN_ACC bool PFRecHitProducerKernelImpl1<HCAL>::ApplyCuts(
     const CaloRecHitDeviceCollection::ConstView::const_element rh,
     const PFRecHitHCALParamsAlpakaESDataDevice::ConstView params) {
-    // Reject HCAL recHits below threshold
+    // Reject HCAL recHits below enery threshold
     float threshold = 9999.;
     const uint32_t detId = rh.detId();
     const uint32_t depth = HCAL::getDepth(detId);
@@ -74,7 +74,9 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
   template<> ALPAKA_FN_ACC bool PFRecHitProducerKernelImpl1<ECAL>::ApplyCuts(
     const CaloRecHitDeviceCollection::ConstView::const_element rh,
     const PFRecHitECALParamsAlpakaESDataDevice::ConstView params) {
-    // TODO energy threshold test
+    // Reject ECAL recHits below energy threshold
+    if(rh.energy() < params.energyThresholds()[ECAL::detId2denseId(rh.detId())])
+      return false;
 
     // Reject ECAL recHits of bad quality
     if ((ECAL::checkFlag(rh.flags(), ECAL::Flags::kOutOfTime) && rh.energy() > 2)

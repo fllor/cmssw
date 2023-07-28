@@ -1,7 +1,7 @@
 #include "FWCore/ParameterSet/interface/ConfigurationDescriptions.h"
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 #include "HeterogeneousCore/AlpakaCore/interface/alpaka/ESProducer.h"
-#include "RecoParticleFlow/PFRecHitProducer/interface/JobConfigurationAlpakaRecord.h"
+#include "RecoParticleFlow/PFRecHitProducer/interface/PFRecHitParamsRecord.h"
 #include "RecoParticleFlow/PFRecHitProducer/interface/alpaka/PFRecHitParamsAlpakaESData.h"
 #include "RecoParticleFlow/PFRecHitProducer/interface/alpaka/CalorimeterDefinitions.h"
 
@@ -26,7 +26,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
       descriptions.addWithDefaultLabel(desc);
     }
 
-    std::unique_ptr<PFRecHitHCALParamsAlpakaESDataHost> produce(JobConfigurationAlpakaRecord const& iRecord) {
+    std::unique_ptr<PFRecHitHCALParamsAlpakaESDataHost> produce(PFRecHitHCALParamsRecord const& iRecord) {
       auto product = std::make_unique<PFRecHitHCALParamsAlpakaESDataHost>(HCAL::maxDepthHB + HCAL::maxDepthHE, cms::alpakatools::host());
       for (uint32_t idx = 0; idx < HCAL::maxDepthHB; ++idx) {
         product->view().energyThresholds()[idx] = energyThresholdsHB_[idx];

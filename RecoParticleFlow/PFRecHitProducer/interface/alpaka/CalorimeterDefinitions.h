@@ -10,7 +10,7 @@
 
 #include "RecoParticleFlow/PFRecHitProducer/interface/alpaka/PFRecHitParamsAlpakaESData.h"
 #include "RecoParticleFlow/PFRecHitProducer/interface/alpaka/PFRecHitHBHETopologyAlpakaESData.h"
-
+#include "RecoParticleFlow/PFRecHitProducer/interface/PFRecHitParamsRecord.h"
 
 namespace ALPAKA_ACCELERATOR_NAMESPACE {
   namespace ParticleFlowRecHitProducerAlpaka {
@@ -23,6 +23,8 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
     // These are structs rather than namespaces, such that they can be used as template arguments
     struct HCAL {
       using ParameterType = PFRecHitHCALParamsAlpakaESDataDevice;
+      using ParameterRecordType = PFRecHitHCALParamsRecord;
+
       static constexpr uint32_t maxDepthHB = 4;
       static constexpr uint32_t maxDepthHE = 7;
       static constexpr uint32_t firstHBRing = 1;
@@ -97,8 +99,10 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
         return 0;
       }
     };
+    
     struct ECAL {
-      using ParameterType = PFRecHitECALParamsAlpakaESDataDevice; // TODO energy thresholds
+      using ParameterType = PFRecHitECALParamsAlpakaESDataDevice;
+      using ParameterRecordType = PFRecHitECALParamsRecord;
 
       // https://cmssdt.cern.ch/lxr/source/DataFormats/EcalRecHit/interface/EcalRecHit.h#0021
       enum Flags {

@@ -9,7 +9,7 @@
 #include "HeterogeneousCore/AlpakaInterface/interface/config.h"
 #include "RecoParticleFlow/PFRecHitProducer/interface/alpaka/PFRecHitParamsAlpakaESData.h"
 #include "RecoParticleFlow/PFRecHitProducer/interface/alpaka/PFRecHitHBHETopologyAlpakaESData.h"
-#include "RecoParticleFlow/PFRecHitProducer/interface/JobConfigurationAlpakaRecord.h"
+#include "RecoParticleFlow/PFRecHitProducer/interface/PFRecHitParamsRecord.h"
 #include "RecoParticleFlow/PFRecHitProducer/interface/PFRecHitHBHETopologyAlpakaESRcd.h"
 
 #include "TestAlgo.h"
@@ -43,7 +43,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
     }
 
   private:
-    device::ESGetToken<PFRecHitHCALParamsAlpakaESDataDevice, JobConfigurationAlpakaRecord> const esParamsToken_;
+    device::ESGetToken<PFRecHitHCALParamsAlpakaESDataDevice, PFRecHitHCALParamsRecord> const esParamsToken_;
     device::ESGetToken<PFRecHitHBHETopologyAlpakaESDataDevice, PFRecHitHBHETopologyAlpakaESRcd> const esTopoToken_;
     device::EDPutToken<portabletest::TestDeviceCollection> devicePutToken_;
 
