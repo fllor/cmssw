@@ -7,7 +7,6 @@
 
 
 namespace ALPAKA_ACCELERATOR_NAMESPACE {
-  using namespace cms::alpakatools;
   using namespace  ParticleFlowRecHitProducerAlpaka;
 
   template<typename CAL>
@@ -24,7 +23,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
       const int32_t num_blocks = alpaka::getWorkDiv<alpaka::Grid, alpaka::Blocks>(acc)[0u];
 
       // Strided loop over CaloRecHits
-      for (int32_t i : elements_with_stride(acc, num_recHits)) {
+      for (int32_t i : cms::alpakatools::elements_with_stride(acc, num_recHits)) {
         // Check energy thresholds (specialised for HCAL/ECAL)
         if(!ApplyCuts(recHits[i], params))
           continue;
@@ -134,7 +133,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
         pfRecHits.size() = *num_pfRecHits;
 
       // Assign position information and associate neighbours
-      for(int32_t i : elements_with_stride(acc, *num_pfRecHits)) {
+      for(int32_t i : cms::alpakatools::elements_with_stride(acc, *num_pfRecHits)) {
         const uint32_t denseId = HCAL::detId2denseId(pfRecHits[i].detId());
 
         if constexpr(std::is_same_v<CAL,HCAL>) { // TODO ECAL topology
@@ -161,19 +160,9 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
   };
 
   template<typename CAL>
-  PFRecHitProducerKernel<CAL>::PFRecHitProducerKernel(
-    cms::alpakatools::device_buffer<Device, uint32_t[]>&& buffer1,
-    cms::alpakatools::device_buffer<Device, uint32_t>&& buffer2)
-    : denseId2pfRecHit(std::move(buffer1)),
-      num_pfRecHits(std::move(buffer2)) {
-  }
-
-  template<typename CAL>
-  PFRecHitProducerKernel<CAL> PFRecHitProducerKernel<CAL>::Construct(Queue& queue) {
-    return PFRecHitProducerKernel{
-      cms::alpakatools::make_device_buffer<uint32_t[]>(queue, std::max(HCAL::SIZE, ECAL::SIZE)),
-      cms::alpakatools::make_device_buffer<uint32_t>(queue)
-    };
+  PFRecHitProducerKernel<CAL>::PFRecHitProducerKernel(Queue& queue)
+    : denseId2pfRecHit(cms::alpakatools::make_device_buffer<uint32_t[]>(queue, std::max(HCAL::SIZE, ECAL::SIZE))),
+      num_pfRecHits(cms::alpakatools::make_device_buffer<uint32_t>(queue)) {
   }
 
   template<typename CAL>
@@ -189,13 +178,15 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
     // Use only one block on the synchronous CPU backend, because there is no
     // performance gain in using multiple blocks, but there is a significant
     // penalty due to the more complex synchronisation.
+    const uint32_t num_recHits = recHits->metadata().size();
     const uint32_t items = 64;
-    const uint32_t groups = std::is_same_v<Device, alpaka::DevCpu> ? 1 : divide_up_by(recHits->metadata().size(), items);
+    const uint32_t groups = std::is_same_v<Device, alpaka::DevCpu> ? 1 : cms::alpakatools::divide_up_by(num_recHits, items);
+    const auto work_div = cms::alpakatools::make_workdiv<Acc1D>(groups, items);
 
-    alpaka::exec<Acc1D>(queue, make_workdiv<Acc1D>(groups, items), PFRecHitProducerKernelImpl1<CAL>{},
-      params.view(), topology.view(), recHits.view(), recHits->metadata().size(), pfRecHits.view(), denseId2pfRecHit.data(), num_pfRecHits.data());
-    alpaka::exec<Acc1D>(queue, make_workdiv<Acc1D>(groups, items), PFRecHitProducerKernelImpl2<CAL>{},
-      topology.view(), recHits.view(), recHits->metadata().size(), pfRecHits.view(), denseId2pfRecHit.data(), num_pfRecHits.data());
+    alpaka::exec<Acc1D>(queue, work_div, PFRecHitProducerKernelImpl1<CAL>{},
+      params.view(), topology.view(), recHits.view(), num_recHits, pfRecHits.view(), denseId2pfRecHit.data(), num_pfRecHits.data());
+    alpaka::exec<Acc1D>(queue, work_div, PFRecHitProducerKernelImpl2<CAL>{},
+      topology.view(), recHits.view(), num_recHits, pfRecHits.view(), denseId2pfRecHit.data(), num_pfRecHits.data());
   }
 
   // Instantiate templates

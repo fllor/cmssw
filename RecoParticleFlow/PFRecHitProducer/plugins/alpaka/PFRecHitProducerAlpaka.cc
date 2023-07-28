@@ -38,7 +38,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
       PFRecHitDeviceCollection pfRecHits{num_recHits, event.queue()};
 
       if(!kernel)
-        kernel.emplace(PFRecHitProducerKernel<CAL>::Construct(event.queue()));
+        kernel.emplace(event.queue());
       kernel->execute(event.device(), event.queue(), params, topology, recHits, pfRecHits);
 
       if(synchronise)
