@@ -56,6 +56,7 @@ private:
 
   void DumpEvent(const GenericCollection&, const GenericCollection&);
   int32_t num_events = 0, num_errors = 0;
+  std::map<int32_t, uint32_t> errors;
   const std::string title;
   const bool dumpFirstEvent, dumpFirstError;
 
@@ -108,11 +109,12 @@ PFRecHitProducerTest::PFRecHitProducerTest(const edm::ParameterSet& conf)
 }
 
 PFRecHitProducerTest::~PFRecHitProducerTest() {
-  fprintf(stderr, "PFRecHitProducerTest%s%s%s has compared %u events and found %u problems\n",
+  fprintf(stderr, "PFRecHitProducerTest%s%s%s has compared %u events and found %u problems: [%u, %u, %u, %u, %u]\n",
     title.empty() ? "" : "[",
     title.c_str(),
     title.empty() ? "" : "]",
-    num_events, num_errors);
+    num_events, num_errors,
+    errors[1], errors[2], errors[3], errors[4], errors[5]);
 }
 
 void PFRecHitProducerTest::analyze(edm::Event const& event, edm::EventSetup const& c) {
@@ -219,6 +221,7 @@ void PFRecHitProducerTest::analyze(edm::Event const& event, edm::EventSetup cons
       DumpEvent(pfRecHits[0], pfRecHits[1]);
     }
     num_errors++;
+    errors[error]++;
   }
   num_events++;
 }
