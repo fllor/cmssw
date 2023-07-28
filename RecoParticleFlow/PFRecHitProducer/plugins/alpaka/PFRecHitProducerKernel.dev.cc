@@ -15,7 +15,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
     template <typename TAcc, typename = std::enable_if_t<alpaka::isAccelerator<TAcc>>>
     ALPAKA_FN_ACC void operator()(const TAcc& acc,
                                   const typename CAL::ParameterType::ConstView params,
-                                  const PFRecHitHBHETopologyAlpakaESDataDevice::ConstView topology,
+                                  const typename CAL::TopologyType::ConstView topology,
                                   const CaloRecHitDeviceCollection::ConstView recHits, int32_t num_recHits,
                                   PFRecHitDeviceCollection::View pfRecHits,
                                   uint32_t* __restrict__ denseId2pfRecHit,
@@ -125,7 +125,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
   public:
     template <typename TAcc, typename = std::enable_if_t<alpaka::isAccelerator<TAcc>>>
     ALPAKA_FN_ACC void operator()(const TAcc& acc,
-                                  const PFRecHitHBHETopologyAlpakaESDataDevice::ConstView topology,
+                                  const typename CAL::TopologyType::ConstView topology,
                                   const CaloRecHitDeviceCollection::ConstView recHits, int32_t num_recHits,
                                   PFRecHitDeviceCollection::View pfRecHits,
                                   const uint32_t* __restrict__ denseId2pfRecHit,
@@ -170,7 +170,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
   template<typename CAL>
   void PFRecHitProducerKernel<CAL>::execute(const Device& device, Queue& queue,
     const typename CAL::ParameterType& params,
-    const PFRecHitHBHETopologyAlpakaESDataDevice& topology,
+    const typename CAL::TopologyType& topology,
     const CaloRecHitDeviceCollection& recHits,
     PFRecHitDeviceCollection& pfRecHits) {
 

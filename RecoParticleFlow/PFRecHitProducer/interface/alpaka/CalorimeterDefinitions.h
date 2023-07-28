@@ -9,8 +9,9 @@
 #include "DataFormats/EcalDetId/interface/EcalSubdetector.h"
 
 #include "RecoParticleFlow/PFRecHitProducer/interface/alpaka/PFRecHitParamsAlpakaESData.h"
-#include "RecoParticleFlow/PFRecHitProducer/interface/alpaka/PFRecHitHBHETopologyAlpakaESData.h"
+#include "RecoParticleFlow/PFRecHitProducer/interface/alpaka/PFRecHitTopologyAlpakaESData.h"
 #include "RecoParticleFlow/PFRecHitProducer/interface/PFRecHitParamsRecord.h"
+#include "RecoParticleFlow/PFRecHitProducer/interface/PFRecHitTopologyRecord.h"
 
 namespace ALPAKA_ACCELERATOR_NAMESPACE {
   namespace ParticleFlowRecHitProducerAlpaka {
@@ -24,6 +25,8 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
     struct HCAL {
       using ParameterType = PFRecHitHCALParamsAlpakaESDataDevice;
       using ParameterRecordType = PFRecHitHCALParamsRecord;
+      using TopologyType = PFRecHitHCALTopologyAlpakaESDataDevice;
+      using TopologyRecordType = PFRecHitHCALTopologyRecord;
 
       static constexpr uint32_t maxDepthHB = 4;
       static constexpr uint32_t maxDepthHE = 7;
@@ -99,10 +102,14 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
         return 0;
       }
     };
-    
+
     struct ECAL {
       using ParameterType = PFRecHitECALParamsAlpakaESDataDevice;
       using ParameterRecordType = PFRecHitECALParamsRecord;
+      //using TopologyType = PFRecHitECALTopologyAlpakaESDataDevice;
+      //using TopologyRecordType = PFRecHitECALTopologyRecord;
+      using TopologyType = PFRecHitHCALTopologyAlpakaESDataDevice;
+      using TopologyRecordType = PFRecHitHCALTopologyRecord;
 
       // https://cmssdt.cern.ch/lxr/source/DataFormats/EcalRecHit/interface/EcalRecHit.h#0021
       enum Flags {

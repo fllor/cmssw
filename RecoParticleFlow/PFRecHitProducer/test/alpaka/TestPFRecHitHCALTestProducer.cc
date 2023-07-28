@@ -8,17 +8,17 @@
 #include "HeterogeneousCore/AlpakaCore/interface/alpaka/ESGetToken.h"
 #include "HeterogeneousCore/AlpakaInterface/interface/config.h"
 #include "RecoParticleFlow/PFRecHitProducer/interface/alpaka/PFRecHitParamsAlpakaESData.h"
-#include "RecoParticleFlow/PFRecHitProducer/interface/alpaka/PFRecHitHBHETopologyAlpakaESData.h"
+#include "RecoParticleFlow/PFRecHitProducer/interface/alpaka/PFRecHitTopologyAlpakaESData.h"
 #include "RecoParticleFlow/PFRecHitProducer/interface/PFRecHitParamsRecord.h"
-#include "RecoParticleFlow/PFRecHitProducer/interface/PFRecHitHBHETopologyAlpakaESRcd.h"
+#include "RecoParticleFlow/PFRecHitProducer/interface/PFRecHitTopologyRecord.h"
 
 #include "TestAlgo.h"
 
 namespace ALPAKA_ACCELERATOR_NAMESPACE {
 
-  class TestPFRecHitHBHETestProducer : public stream::EDProducer<> {
+  class TestPFRecHitHCALTestProducer : public stream::EDProducer<> {
   public:
-    TestPFRecHitHBHETestProducer(edm::ParameterSet const& config) :
+    TestPFRecHitHCALTestProducer(edm::ParameterSet const& config) :
       esParamsToken_{esConsumes(config.getParameter<edm::ESInputTag>("pfRecHitParams"))},
       esTopoToken_{esConsumes(config.getParameter<edm::ESInputTag>("pfRecHitTopology"))} {
       devicePutToken_ = produces("");
@@ -30,7 +30,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
 
       auto deviceProduct = std::make_unique<portabletest::TestDeviceCollection>(256, iEvent.queue());
 
-      algo_.printPFRecHitHBHEESData(iEvent.queue(), esParams, esTopo);
+      algo_.printPFRecHitHCALESData(iEvent.queue(), esParams, esTopo);
 
       iEvent.put(devicePutToken_, std::move(deviceProduct));
     }
@@ -38,13 +38,13 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
     static void fillDescriptions(edm::ConfigurationDescriptions& descriptions) {
       edm::ParameterSetDescription desc;
       desc.add<edm::ESInputTag>("pfRecHitParams", edm::ESInputTag("pfRecHitHCALParamsESProducer", ""));
-      desc.add<edm::ESInputTag>("pfRecHitTopology", edm::ESInputTag("pfRecHitHBHETopologyESProducer", ""));
+      desc.add<edm::ESInputTag>("pfRecHitTopology", edm::ESInputTag("pfRecHitHCALTopologyESProducer", ""));
       descriptions.addWithDefaultLabel(desc);
     }
 
   private:
     device::ESGetToken<PFRecHitHCALParamsAlpakaESDataDevice, PFRecHitHCALParamsRecord> const esParamsToken_;
-    device::ESGetToken<PFRecHitHBHETopologyAlpakaESDataDevice, PFRecHitHBHETopologyAlpakaESRcd> const esTopoToken_;
+    device::ESGetToken<PFRecHitHCALTopologyAlpakaESDataDevice, PFRecHitHCALTopologyRecord> const esTopoToken_;
     device::EDPutToken<portabletest::TestDeviceCollection> devicePutToken_;
 
     TestAlgo algo_;
@@ -53,4 +53,4 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
 }  // namespace ALPAKA_ACCELERATOR_NAMESPACE
 
 #include "HeterogeneousCore/AlpakaCore/interface/alpaka/MakerMacros.h"
-DEFINE_FWK_ALPAKA_MODULE(TestPFRecHitHBHETestProducer);
+DEFINE_FWK_ALPAKA_MODULE(TestPFRecHitHCALTestProducer);

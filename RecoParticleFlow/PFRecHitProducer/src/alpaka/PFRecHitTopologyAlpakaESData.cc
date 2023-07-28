@@ -1,0 +1,5 @@
+#include "HeterogeneousCore/AlpakaCore/interface/alpaka/typelookup.h"
+
+#include "RecoParticleFlow/PFRecHitProducer/interface/alpaka/PFRecHitTopologyAlpakaESData.h"
+TYPELOOKUP_ALPAKA_DATA_REG(PFRecHitHCALTopologyAlpakaESDataDevice);
+TYPELOOKUP_ALPAKA_DATA_REG(PFRecHitECALTopologyAlpakaESDataDevice);

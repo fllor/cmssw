@@ -1,11 +1,9 @@
 #ifndef RecoParticleFlow_PFRecHitProducer_alpaka_PFRecHitProducerKernel_h
 #define RecoParticleFlow_PFRecHitProducer_alpaka_PFRecHitProducerKernel_h
 
+#include "HeterogeneousCore/AlpakaInterface/interface/config.h"
 #include "DataFormats/ParticleFlowReco_Alpaka/interface/alpaka/PFRecHitDeviceCollection.h"
 #include "DataFormats/ParticleFlowReco_Alpaka/interface/alpaka/CaloRecHitDeviceCollection.h"
-#include "RecoParticleFlow/PFRecHitProducer/interface/alpaka/PFRecHitParamsAlpakaESData.h"
-#include "RecoParticleFlow/PFRecHitProducer/interface/alpaka/PFRecHitHBHETopologyAlpakaESData.h"
-#include "HeterogeneousCore/AlpakaInterface/interface/config.h"
 #include "RecoParticleFlow/PFRecHitProducer/interface/alpaka/CalorimeterDefinitions.h"
 
 namespace ALPAKA_ACCELERATOR_NAMESPACE {
@@ -16,7 +14,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
 
     void execute(const Device& device, Queue& queue,
       const typename CAL::ParameterType& params,
-      const PFRecHitHBHETopologyAlpakaESDataDevice& topology,
+      const typename CAL::TopologyType& topology,
       const CaloRecHitDeviceCollection& recHits,
       PFRecHitDeviceCollection& collection);
 

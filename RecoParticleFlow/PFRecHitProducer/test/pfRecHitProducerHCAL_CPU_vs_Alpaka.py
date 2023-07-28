@@ -231,7 +231,7 @@ process.jobConfAlpakaRcdESSource = cms.ESSource('EmptyESSource',
     firstValid = cms.vuint32(1)
 )
 process.pfRecHitHBHETopologyAlpakaESRcdESSource = cms.ESSource('EmptyESSource',
-  recordName = cms.string('PFRecHitHBHETopologyAlpakaESRcd'),
+  recordName = cms.string('PFRecHitHCALTopologyRecord'),
   iovIsRunNotTime = cms.bool(True),
   firstValid = cms.vuint32(1)
 )
@@ -239,7 +239,7 @@ process.hltParticleFlowRecHitParamsESProducer = cms.ESProducer(alpaka_backend_st
     energyThresholdsHB = cms.vdouble( 0.1, 0.2, 0.3, 0.3 ),
     energyThresholdsHE = cms.vdouble( 0.1, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2 )
 )
-process.hltParticleFlowRecHitTopologyESProducer = cms.ESProducer(alpaka_backend_str % "PFRecHitHBHETopologyESProducer",
+process.hltParticleFlowRecHitTopologyESProducer = cms.ESProducer(alpaka_backend_str % "PFRecHitHCALTopologyESProducer",
     hcalEnums = cms.vint32(1, 2)
 )
 process.hltParticleFlowPFRecHitAlpaka = cms.EDProducer(alpaka_backend_str % "PFRecHitProducerAlpakaHCAL",
