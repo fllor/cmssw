@@ -190,18 +190,18 @@ process.hltParticleFlowRecHitECAL = cms.EDProducer("PFRecHitProducer",
         endcap = cms.PSet( )
     ),
     producers = cms.VPSet(
-          cms.PSet(
-            name = cms.string("PFEBRecHitCreator"),
-            src  = cms.InputTag("hltEcalRecHit","EcalRecHitsEB"),
-            srFlags = cms.InputTag(""),
-            qualityTests = qualityTestsECAL
-          )#,
           #cms.PSet(
-          #  name = cms.string("PFEERecHitCreator"),
-          #  src  = cms.InputTag("hltEcalRecHit","EcalRecHitsEE"),
+          #  name = cms.string("PFEBRecHitCreator"),
+          #  src  = cms.InputTag("hltEcalRecHit","EcalRecHitsEB"),
           #  srFlags = cms.InputTag(""),
           #  qualityTests = qualityTestsECAL
-          #)
+          #)#,
+          cms.PSet(
+            name = cms.string("PFEERecHitCreator"),
+            src  = cms.InputTag("hltEcalRecHit","EcalRecHitsEE"),
+            srFlags = cms.InputTag(""),
+            qualityTests = qualityTestsECAL
+          )
     )
 )
 
@@ -220,8 +220,8 @@ else:
 
 # Convert legacy CaloRecHits to CaloRecHitSoA
 process.hltParticleFlowRecHitToSoA = cms.EDProducer(alpaka_backend_str % "ECaloRecHitSoAProducer",
-    src = cms.InputTag("hltEcalRecHit","EcalRecHitsEB"),    # FOR NOW ONLY BARREL
-    #src = cms.InputTag("hltEcalRecHit","EcalRecHitsEE"), # endcap
+    #src = cms.InputTag("hltEcalRecHit","EcalRecHitsEB"),    # FOR NOW ONLY BARREL
+    src = cms.InputTag("hltEcalRecHit","EcalRecHitsEE"), # endcap
     synchronise = cms.bool(args.synchronise)
 )
 

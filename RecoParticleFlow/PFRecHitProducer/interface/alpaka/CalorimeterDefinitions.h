@@ -25,8 +25,13 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
     struct HCAL {
       using ParameterType = PFRecHitHCALParamsAlpakaESDataDevice;
       using ParameterRecordType = PFRecHitHCALParamsRecord;
-      using TopologyType = PFRecHitHCALTopologyAlpakaESDataDevice;
+      using TopologyTypeHost = PFRecHitHCALTopologyAlpakaESDataHost;
+      using TopologyTypeDevice = PFRecHitHCALTopologyAlpakaESDataDevice;
       using TopologyRecordType = PFRecHitHCALTopologyRecord;
+
+      static constexpr DetId::Detector DetectorId = DetId::Detector::Hcal;
+      static constexpr int SubdetectorBarrelId = HcalSubdetector::HcalBarrel;
+      static constexpr int SubdetectorEndcapId = HcalSubdetector::HcalEndcap;
 
       static constexpr uint32_t maxDepthHB = 4;
       static constexpr uint32_t maxDepthHE = 7;
@@ -110,10 +115,13 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
     struct ECAL {
       using ParameterType = PFRecHitECALParamsAlpakaESDataDevice;
       using ParameterRecordType = PFRecHitECALParamsRecord;
-      using TopologyType = PFRecHitECALTopologyAlpakaESDataDevice;
+      using TopologyTypeHost = PFRecHitECALTopologyAlpakaESDataHost;
+      using TopologyTypeDevice = PFRecHitECALTopologyAlpakaESDataDevice;
       using TopologyRecordType = PFRecHitECALTopologyRecord;
-      //using TopologyType = PFRecHitHCALTopologyAlpakaESDataDevice;
-      //using TopologyRecordType = PFRecHitHCALTopologyRecord;
+
+      static constexpr DetId::Detector DetectorId = DetId::Detector::Ecal;
+      static constexpr int SubdetectorBarrelId = EcalSubdetector::EcalBarrel;
+      static constexpr int SubdetectorEndcapId = EcalSubdetector::EcalEndcap;
 
       // https://cmssdt.cern.ch/lxr/source/DataFormats/EcalRecHit/interface/EcalRecHit.h#0021
       enum Flags {

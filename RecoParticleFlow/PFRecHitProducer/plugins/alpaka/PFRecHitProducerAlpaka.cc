@@ -28,7 +28,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
 
     void produce(device::Event& event, device::EventSetup const& setup) override {
       const typename CAL::ParameterType& params = setup.getData(paramsToken);
-      const typename CAL::TopologyType& topology = setup.getData(topologyToken);
+      const typename CAL::TopologyTypeDevice& topology = setup.getData(topologyToken);
       const CaloRecHitDeviceCollection& recHits = event.get(recHitsToken);
       const int num_recHits = recHits->metadata().size();
       PFRecHitDeviceCollection pfRecHits{num_recHits, event.queue()};
@@ -54,7 +54,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
 
   private:
     const device::ESGetToken<typename CAL::ParameterType,typename CAL::ParameterRecordType> paramsToken;
-    const device::ESGetToken<typename CAL::TopologyType,typename CAL::TopologyRecordType> topologyToken;
+    const device::ESGetToken<typename CAL::TopologyTypeDevice,typename CAL::TopologyRecordType> topologyToken;
     const device::EDGetToken<CaloRecHitDeviceCollection> recHitsToken;
     const device::EDPutToken<PFRecHitDeviceCollection> pfRecHitsToken;
     const bool synchronise;

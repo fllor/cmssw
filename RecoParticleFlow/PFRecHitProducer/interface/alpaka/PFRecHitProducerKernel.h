@@ -14,7 +14,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
 
     void execute(const Device& device, Queue& queue,
       const typename CAL::ParameterType& params,
-      const typename CAL::TopologyType& topology,
+      const typename CAL::TopologyTypeDevice& topology,
       const CaloRecHitDeviceCollection& recHits,
       PFRecHitDeviceCollection& collection);
 
