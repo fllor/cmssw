@@ -39,6 +39,10 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
       static constexpr uint32_t SIZE_ENDCAP = maxDepthHE * (lastHERing - firstHERing + 1) * IPHI_MAX * 2;
       static constexpr uint32_t SIZE = SIZE_BARREL + SIZE_ENDCAP; // maximum possible HCAL denseId (=23328)
 
+      static constexpr bool IsValidDetId(uint32_t detId) {
+        return detId !=0 && DetId(detId).det() == Hcal && (getSubdet(detId) == HcalBarrel || getSubdet(detId) == HcalEndcap);
+      }
+
       //https://cmssdt.cern.ch/lxr/source/DataFormats/HcalDetId/interface/HcalDetId.h#0163
       static constexpr uint32_t getDepth(uint32_t detId) {
         return ((detId >> HcalDetId::kHcalDepthOffset2) & HcalDetId::kHcalDepthMask2);

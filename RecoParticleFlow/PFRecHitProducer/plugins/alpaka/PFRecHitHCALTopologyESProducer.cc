@@ -13,7 +13,6 @@
 #include "HeterogeneousCore/AlpakaInterface/interface/config.h"
 #include "HeterogeneousCore/AlpakaInterface/interface/memory.h"
 
-#include "RecoParticleFlow/PFClusterProducer/interface/PFHCALDenseIdNavigatorCore.h"
 #include "RecoParticleFlow/PFRecHitProducer/interface/alpaka/CalorimeterDefinitions.h"
 
 #include <algorithm>
@@ -60,53 +59,95 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
       hcalGeo[HcalBarrel] = geom.getSubdetectorGeometry(DetId::Hcal, HcalBarrel);
       hcalGeo[HcalEndcap] = geom.getSubdetectorGeometry(DetId::Hcal, HcalEndcap);
 
-      PFHCALDenseIdNavigatorCore navicore{hcalEnums_, geom, topo};
-
-      // Check that denseIds are in expected range
-      auto const& denseIds = navicore.getValidDenseIds();
-      assert(*std::max_element(denseIds.begin(), denseIds.end()) < HCAL::SIZE);
-
       auto product = std::make_unique<PFRecHitHCALTopologyAlpakaESDataHost>(HCAL::SIZE, cms::alpakatools::host());
       auto view = product->view();
 
       for (auto hcalSubdet : {HcalBarrel, HcalEndcap})
-      for (auto const detId : geom.getValidDetIds(DetId::Hcal, hcalSubdet)) {
-        const uint32_t denseId = HCAL::detId2denseId(detId);
-        const GlobalPoint pos = hcalGeo.at(detId.subdetId())->getGeometry(detId)->getPosition();
+        for (auto const detId : geom.getValidDetIds(DetId::Hcal, hcalSubdet)) {
+          const uint32_t denseId = HCAL::detId2denseId(detId);
 
-        view[denseId].positionX() = pos.x();
-        view[denseId].positionY() = pos.y();
-        view[denseId].positionZ() = pos.z();
+          const GlobalPoint pos = hcalGeo.at(detId.subdetId())->getGeometry(detId)->getPosition();
+          view[denseId].positionX() = pos.x();
+          view[denseId].positionY() = pos.y();
+          view[denseId].positionZ() = pos.z();
 
-        auto neigh = navicore.getNeighbours(denseId);
-        // order from navigator: S, SE, SW, E,  W, NE, NW,  N
-        // desired order for PF: N,  S,  E, W, NE, SW, SE, NW
-        const uint32_t order[8] = {1, 6, 5, 2, 3, 4, 7, 0};
-
-        for (uint32_t n = 0; n < 8; ++n) {
-          view[denseId].neighbours()(order[n]) = 0xffffffff;
-
-          // cmssdt.cern.ch/lxr/source/RecoParticleFlow/PFClusterProducer/interface/PFHCALDenseIdNavigator.h#0087
-          // Order: CENTER(NONE),SOUTH,SOUTHEAST,SOUTHWEST,EAST,WEST,NORTHEAST,NORTHWEST,NORTH
-          // neigh[0] is the rechit itself. Skip for neighbour array
-          // If no neighbour exists in a direction, the value will be 0
-          // Some neighbors from HF included! Need to test if these are included in the map!
-          uint32_t neighDetId = neigh[n + 1];
-          if (neighDetId > 0 && (getSubdet(neighDetId) == HcalBarrel || getSubdet(neighDetId) == HcalEndcap))
-            view[denseId].neighbours()(order[n]) = HCAL::detId2denseId(neighDetId);
+          for (uint32_t n = 0; n < 8; n++) {
+            uint32_t neighDetId = GetNeighbourDetId(detId, n, topo);
+            if (HCAL::IsValidDetId(neighDetId))
+              view[denseId].neighbours()(n) = HCAL::detId2denseId(neighDetId);
+            else
+              view[denseId].neighbours()(n) = 0xffffffff;
+          }
         }
 
-        logDebug() << "detId: rawId=" << detId << " subdet=" << detId.subdetId() << " denseId=" << denseId;
-        logDebug() << "  position: x=" << pos.x() << " y=" << pos.y() << " z=" << pos.z();
-        for (uint32_t idx = 0; idx < 8; ++idx) {
-          logDebug() << "  neighbour[" << idx << "]: " << view[denseId].neighbours()(idx);
+      // Remove neighbours that are not backward compatible
+      for (auto hcalSubdet : {HcalBarrel, HcalEndcap})
+        for (auto const detId : geom.getValidDetIds(DetId::Hcal, hcalSubdet)) {
+          const uint32_t denseId = HCAL::detId2denseId(detId);
+          for (uint32_t n = 0; n < 8; n++) {
+            const reco::PFRecHitsTopologyNeighbours& neighboursOfNeighbour = view[view[denseId].neighbours()[n]].neighbours();
+            if(std::find(neighboursOfNeighbour.begin(), neighboursOfNeighbour.end(), denseId) == neighboursOfNeighbour.end())
+              view[denseId].neighbours()[n] = 0xffffffff;
+          }
         }
-      }
+
+      for (auto hcalSubdet : {HcalBarrel, HcalEndcap})
+        for (auto const detId : geom.getValidDetIds(DetId::Hcal, hcalSubdet)) {
+          logDebug() << "detId: rawId=" << detId
+                          << " subdet=" << detId.subdetId()
+                        << " denseId=" << denseId;
+          logDebug() << "  position: x=" << view[denseId].positionX()
+                                << " y=" << view[denseId].positionY()
+                                << " z=" << view[denseId].positionZ();
+          for (uint32_t idx = 0; idx < 8; ++idx) {
+            logDebug() << "  neighbour[" << idx << "]: " << view[denseId].neighbours()(idx);
+          }
+        }
 
       return product;
     }
-  };
 
+    uint32_t GetNeighbourDetId(const uint32_t detId, const uint32_t direction, const HcalTopology& topo) {
+      // desired order for PF: NORTH, SOUTH, EAST, WEST, NORTHEAST, SOUTHWEST, SOUTHEAST, NORTHWEST
+      if(detId == 0)
+        return 0;
+
+      if(direction == 0)  // NORTH
+        return topo.goNorth(detId);  // larger iphi values (except phi boundary)
+      if(direction == 1)  // SOUTH
+        return topo.goSouth(detId);  // smaller iphi values (except phi boundary)
+      if(direction == 2)  // EAST
+        return topo.goEast(detId);  // smaller ieta values
+      if(direction == 3)  // WEST
+        return topo.goWest(detId);  // larger ieta values
+
+      if(direction == 4) { // NORTHEAST
+        if (HCAL::getZside(detId) > 0)  // positive eta: east -> move to smaller |ieta| (finner phi granularity) first
+          return GetNeighbourDetId(GetNeighbourDetId(detId, 2, topo), 0, topo);
+        else  // negative eta: move in phi first then move to east (coarser phi granularity)
+          return GetNeighbourDetId(GetNeighbourDetId(detId, 0, topo), 2, topo);
+      }
+      if(direction == 5) {  // SOUTHWEST
+        if (HCAL::getZside(detId) > 0)  // positive eta: move in phi first then move to west (coarser phi granularity)
+          return GetNeighbourDetId(GetNeighbourDetId(detId, 1, topo), 3, topo);
+        else  // negative eta: west -> move to smaller |ieta| (finner phi granularity) first
+          return GetNeighbourDetId(GetNeighbourDetId(detId, 3, topo), 1, topo);
+      }
+      if(direction == 6) {  // SOUTHEAST
+        if (HCAL::getZside(detId) > 0)  // positive eta: east -> move to smaller |ieta| (finner phi granularity) first
+          return GetNeighbourDetId(GetNeighbourDetId(detId, 2, topo), 1, topo);
+        else  // negative eta: move in phi first then move to east (coarser phi granularity)
+          return GetNeighbourDetId(GetNeighbourDetId(detId, 1, topo), 2, topo);
+      }
+      if(direction == 7) {  // NORTHWEST
+        if (HCAL::getZside(detId) > 0)  // positive eta: move in phi first then move to west (coarser phi granularity)
+          return GetNeighbourDetId(GetNeighbourDetId(detId, 0, topo), 3, topo);
+        else  // negative eta: west -> move to smaller |ieta| (finner phi granularity) first
+          return GetNeighbourDetId(GetNeighbourDetId(detId, 3, topo), 0, topo);
+      }
+      return 0;
+    }
+  };
 }  // namespace ALPAKA_ACCELERATOR_NAMESPACE
 
 DEFINE_FWK_EVENTSETUP_ALPAKA_MODULE(PFRecHitHCALTopologyESProducer);
