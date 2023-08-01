@@ -40,7 +40,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
       static constexpr uint32_t SIZE = SIZE_BARREL + SIZE_ENDCAP; // maximum possible HCAL denseId (=23328)
 
       static constexpr bool IsValidDetId(uint32_t detId) {
-        return detId !=0 && DetId(detId).det() == Hcal && (getSubdet(detId) == HcalBarrel || getSubdet(detId) == HcalEndcap);
+        return detId !=0 && DetId(detId).det() == DetId::Detector::Hcal && (getSubdet(detId) == HcalSubdetector::HcalBarrel || getSubdet(detId) == HcalSubdetector::HcalEndcap);
       }
 
       //https://cmssdt.cern.ch/lxr/source/DataFormats/HcalDetId/interface/HcalDetId.h#0163
@@ -110,10 +110,10 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
     struct ECAL {
       using ParameterType = PFRecHitECALParamsAlpakaESDataDevice;
       using ParameterRecordType = PFRecHitECALParamsRecord;
-      //using TopologyType = PFRecHitECALTopologyAlpakaESDataDevice;
-      //using TopologyRecordType = PFRecHitECALTopologyRecord;
-      using TopologyType = PFRecHitHCALTopologyAlpakaESDataDevice;
-      using TopologyRecordType = PFRecHitHCALTopologyRecord;
+      using TopologyType = PFRecHitECALTopologyAlpakaESDataDevice;
+      using TopologyRecordType = PFRecHitECALTopologyRecord;
+      //using TopologyType = PFRecHitHCALTopologyAlpakaESDataDevice;
+      //using TopologyRecordType = PFRecHitHCALTopologyRecord;
 
       // https://cmssdt.cern.ch/lxr/source/DataFormats/EcalRecHit/interface/EcalRecHit.h#0021
       enum Flags {
@@ -215,6 +215,14 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
 
         printf("invalid detId\n");
         return 0;
+      }
+
+      static constexpr bool IsValidDetId(uint32_t detId) {
+        return detId !=0 && DetId(detId).det() == DetId::Detector::Ecal && (getSubdet(detId) == EcalSubdetector::EcalBarrel || getSubdet(detId) == EcalSubdetector::EcalEndcap);
+      }
+
+      static constexpr int getZside(uint32_t detId) {
+        return ((getSubdet(detId) == EcalSubdetector::EcalBarrel) ? BARREL::positiveZ(detId) : ENDCAP::positiveZ(detId)) ? (1) : (-1);
       }
 
       static constexpr uint32_t SIZE = BARREL::SIZE + ENDCAP::SIZE; // maximum possible ECAL denseId (=75848)

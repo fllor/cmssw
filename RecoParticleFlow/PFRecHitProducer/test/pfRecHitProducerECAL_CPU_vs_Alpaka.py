@@ -158,11 +158,11 @@ parser.add_argument('-s', '--synchronise', action='store_true', default=False,
                     help='Put synchronisation point at the end of Alpaka modules (for benchmarking performance)')
 parser.add_argument('-t', '--threads', type=int, default=8,
                     help='Number of threads. Default: 8')
-parser.add_argument('-d', '--debug', action='store_true', default=False,
-                    help='Dump legacy and Alpaka PFRecHits for first event. Default: off')
+parser.add_argument('-d', '--debug', type=int, default=0, const=1, nargs="?",
+                    help='Dump PFRecHits for first event (n>0) or first error (n<0). This applies to the n-th validation (1: Legacy vs Alpaka, 2: Legacy vs Legacy-from-Alpaka, 3: Alpaka vs Legacy-from-Alpaka). Default: 0')
 args = parser.parse_args(sys.argv[3:])
 
-if(args.debug and args.threads != 1):
+if(args.debug != 0 and args.threads != 1):
     args.threads = 1
     print("Number of threads set to 1 for debugging")
 
@@ -221,6 +221,7 @@ else:
 # Convert legacy CaloRecHits to CaloRecHitSoA
 process.hltParticleFlowRecHitToSoA = cms.EDProducer(alpaka_backend_str % "ECaloRecHitSoAProducer",
     src = cms.InputTag("hltEcalRecHit","EcalRecHitsEB"),    # FOR NOW ONLY BARREL
+    #src = cms.InputTag("hltEcalRecHit","EcalRecHitsEE"), # endcap
     synchronise = cms.bool(args.synchronise)
 )
 
@@ -230,15 +231,13 @@ process.jobConfAlpakaRcdESSource = cms.ESSource('EmptyESSource',
     iovIsRunNotTime = cms.bool(True),
     firstValid = cms.vuint32(1)
 )
-process.pfRecHitHBHETopologyAlpakaESRcdESSource = cms.ESSource('EmptyESSource',
-  recordName = cms.string('PFRecHitHBHETopologyAlpakaESRcd'),
+process.pfRecHitHCALTopologyAlpakaESRcdESSource = cms.ESSource('EmptyESSource',
+  recordName = cms.string('PFRecHitECALTopologyRecord'),
   iovIsRunNotTime = cms.bool(True),
   firstValid = cms.vuint32(1)
 )
 process.hltParticleFlowRecHitParamsESProducer = cms.ESProducer(alpaka_backend_str % "PFRecHitECALParamsESProducer")
-process.hltParticleFlowRecHitTopologyESProducer = cms.ESProducer(alpaka_backend_str % "PFRecHitHBHETopologyESProducer",
-    hcalEnums = cms.vint32(1, 2)
-)
+process.hltParticleFlowRecHitTopologyESProducer = cms.ESProducer(alpaka_backend_str % "PFRecHitECALTopologyESProducer")
 process.hltParticleFlowPFRecHitAlpaka = cms.EDProducer(alpaka_backend_str % "PFRecHitProducerAlpakaECAL",
     src = cms.InputTag("hltParticleFlowRecHitToSoA"),
     params = cms.ESInputTag("hltParticleFlowRecHitParamsESProducer:"),
@@ -255,8 +254,8 @@ process.hltParticleFlowPFRecHitComparison = DQMEDAnalyzer("PFRecHitProducerTest"
     pfRecHitsType1 = cms.untracked.string("legacy"),
     pfRecHitsType2 = cms.untracked.string("alpaka"),
     title = cms.untracked.string("Legacy vs Alpaka"),
-    dumpFirstEvent = cms.untracked.bool(args.debug),
-    dumpFirstError = cms.untracked.bool(False)
+    dumpFirstEvent = cms.untracked.bool(args.debug == 1),
+    dumpFirstError = cms.untracked.bool(args.debug == -1)
 )
 
 # Convert Alpaka PFRecHits to legacy format and validate against CPU implementation
@@ -270,8 +269,8 @@ process.htlParticleFlowAlpakaToLegacyPFRecHitsComparison1 = DQMEDAnalyzer("PFRec
     pfRecHitsType1 = cms.untracked.string("legacy"),
     pfRecHitsType2 = cms.untracked.string("legacy"),
     title = cms.untracked.string("Legacy vs Legacy-from-Alpaka"),
-    dumpFirstEvent = cms.untracked.bool(False),
-    dumpFirstError = cms.untracked.bool(False)
+    dumpFirstEvent = cms.untracked.bool(args.debug == 2),
+    dumpFirstError = cms.untracked.bool(args.debug == -2)
 )
 process.htlParticleFlowAlpakaToLegacyPFRecHitsComparison2 = DQMEDAnalyzer("PFRecHitProducerTest",
     recHitsSourceCPU = cms.untracked.InputTag("hltHbhereco"),
@@ -280,8 +279,8 @@ process.htlParticleFlowAlpakaToLegacyPFRecHitsComparison2 = DQMEDAnalyzer("PFRec
     pfRecHitsType1 = cms.untracked.string("alpaka"),
     pfRecHitsType2 = cms.untracked.string("legacy"),
     title = cms.untracked.string("Alpaka vs Legacy-from-Alpaka"),
-    dumpFirstEvent = cms.untracked.bool(False),
-    dumpFirstError = cms.untracked.bool(False)
+    dumpFirstEvent = cms.untracked.bool(args.debug == 3),
+    dumpFirstError = cms.untracked.bool(args.debug == -3)
 )
 
 ## Construct CUDA PFRecHits, which also constructs the legacy format. Validate legacy vs legacy-from-CUDA

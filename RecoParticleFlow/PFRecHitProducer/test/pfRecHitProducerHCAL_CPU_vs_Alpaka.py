@@ -230,7 +230,7 @@ process.jobConfAlpakaRcdESSource = cms.ESSource('EmptyESSource',
     iovIsRunNotTime = cms.bool(True),
     firstValid = cms.vuint32(1)
 )
-process.pfRecHitHBHETopologyAlpakaESRcdESSource = cms.ESSource('EmptyESSource',
+process.pfRecHitHCALTopologyAlpakaESRcdESSource = cms.ESSource('EmptyESSource',
   recordName = cms.string('PFRecHitHCALTopologyRecord'),
   iovIsRunNotTime = cms.bool(True),
   firstValid = cms.vuint32(1)

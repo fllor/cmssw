@@ -136,25 +136,20 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
 
       // Assign position information and associate neighbours
       for(int32_t i : cms::alpakatools::elements_with_stride(acc, *num_pfRecHits)) {
-        const uint32_t denseId = HCAL::detId2denseId(pfRecHits[i].detId());
+        const uint32_t denseId = CAL::detId2denseId(pfRecHits[i].detId());
 
-        if constexpr(std::is_same_v<CAL,HCAL>) { // TODO ECAL topology
-          pfRecHits[i].x() = topology[denseId].positionX();
-          pfRecHits[i].y() = topology[denseId].positionY();
-          pfRecHits[i].z() = topology[denseId].positionZ();
-        }
+        pfRecHits[i].x() = topology[denseId].positionX();
+        pfRecHits[i].y() = topology[denseId].positionY();
+        pfRecHits[i].z() = topology[denseId].positionZ();
 
         for(uint32_t n = 0; n < 8; n++)
         {
           pfRecHits[i].neighbours()(n) = -1;
-          if constexpr(std::is_same_v<CAL,HCAL>) { // TODO ECAL topology
-            const uint32_t denseId_neighbour = topology[denseId].neighbours()(n);
-            if(denseId_neighbour != 0xffffffff)
-            {
-              const uint32_t pfRecHit_neighbour = denseId2pfRecHit[denseId_neighbour];
-              if(pfRecHit_neighbour != 0xffffffff)
-                pfRecHits[i].neighbours()(n) = (int32_t)pfRecHit_neighbour;
-            }
+          const uint32_t denseId_neighbour = topology[denseId].neighbours()(n);
+          if(denseId_neighbour != 0xffffffff) {
+            const uint32_t pfRecHit_neighbour = denseId2pfRecHit[denseId_neighbour];
+            if(pfRecHit_neighbour != 0xffffffff)
+              pfRecHits[i].neighbours()(n) = (int32_t)pfRecHit_neighbour;
           }
         }
       }
@@ -163,7 +158,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
 
   template<typename CAL>
   PFRecHitProducerKernel<CAL>::PFRecHitProducerKernel(Queue& queue)
-    : denseId2pfRecHit(cms::alpakatools::make_device_buffer<uint32_t[]>(queue, std::max(HCAL::SIZE, ECAL::SIZE))),
+    : denseId2pfRecHit(cms::alpakatools::make_device_buffer<uint32_t[]>(queue, CAL::SIZE)),
       num_pfRecHits(cms::alpakatools::make_device_buffer<uint32_t>(queue)) {
   }
 

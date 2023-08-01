@@ -14,6 +14,7 @@
 #include "HeterogeneousCore/AlpakaInterface/interface/memory.h"
 
 #include "RecoParticleFlow/PFRecHitProducer/interface/alpaka/CalorimeterDefinitions.h"
+#include "Geometry/CaloGeometry/interface/CaloSubdetectorGeometry.h"
 
 #include <algorithm>
 #include <memory>
@@ -52,8 +53,8 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
     }
 
     std::unique_ptr<PFRecHitHCALTopologyAlpakaESDataHost> produce(PFRecHitHCALTopologyRecord const& iRecord) {
-      auto const& geom = iRecord.get(geomToken_);
-      auto const& topo = iRecord.get(hcalToken_);
+      const auto& geom = iRecord.get(geomToken_);
+      const auto& topo = iRecord.get(hcalToken_);
 
       std::unordered_map<int, const CaloSubdetectorGeometry*> hcalGeo;
       hcalGeo[HcalBarrel] = geom.getSubdetectorGeometry(DetId::Hcal, HcalBarrel);
@@ -93,6 +94,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
 
       for (auto hcalSubdet : {HcalBarrel, HcalEndcap})
         for (auto const detId : geom.getValidDetIds(DetId::Hcal, hcalSubdet)) {
+          const uint32_t denseId = HCAL::detId2denseId(detId);
           logDebug() << "detId: rawId=" << detId
                           << " subdet=" << detId.subdetId()
                         << " denseId=" << denseId;
