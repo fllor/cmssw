@@ -10,11 +10,14 @@
 #include "DataFormats/EcalRecHit/interface/EcalRecHit.h"
 #include "DataFormats/ParticleFlowReco_Alpaka/interface/CaloRecHitHostCollection.h"
 #include "DataFormats/ParticleFlowReco_Alpaka/interface/alpaka/CaloRecHitDeviceCollection.h"
+#include "RecoParticleFlow/PFRecHitProducer/interface/alpaka/CalorimeterDefinitions.h"
 
 #define DEBUG false
 
 namespace ALPAKA_ACCELERATOR_NAMESPACE {
-  template<typename RecHit>
+  using namespace ParticleFlowRecHitProducerAlpaka;
+
+  template<typename CAL>
   class CaloRecHitSoAProducer : public global::EDProducer<> {
   public:
     CaloRecHitSoAProducer(edm::ParameterSet const& config) :
@@ -24,7 +27,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
     {}
 
     void produce(edm::StreamID sid, device::Event& event, device::EventSetup const&) const override {
-      const edm::SortedCollection<RecHit>& recHits = event.get(recHitsToken);
+      const edm::SortedCollection<typename CAL::CaloRecHitType>& recHits = event.get(recHitsToken);
       const int32_t num_recHits = recHits.size();
       if(DEBUG)
         printf("Found %d recHits\n", num_recHits);
@@ -37,7 +40,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
         ConvertRecHit(view[i], recHits[i]);
 
         if (DEBUG && i < 10)
-          printf("recHit %4d %u %f %f %08x\n", i, view[i].detId(), view[i].energy(), view[i].time(), view[i].flags());
+          printf("recHit %4d %u %f %f %08x\n", i, view.detId(i), view.energy(i), view.time(i), view.flags(i));
       }
 
       CaloRecHitDeviceCollection deviceProduct{num_recHits, event.queue()};
@@ -55,15 +58,15 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
     }
 
   private:
-    const edm::EDGetTokenT<edm::SortedCollection<RecHit>> recHitsToken;
+    const edm::EDGetTokenT<edm::SortedCollection<typename CAL::CaloRecHitType>> recHitsToken;
     const device::EDPutToken<CaloRecHitDeviceCollection> deviceToken;
     const bool synchronise;
 
-    static void ConvertRecHit(reco::CaloRecHitHostCollection::View::element to, const RecHit& from);
+    static void ConvertRecHit(reco::CaloRecHitHostCollection::View::element to, const typename CAL::CaloRecHitType& from);
   };
 
   template<>
-  void CaloRecHitSoAProducer<HBHERecHit>::ConvertRecHit(reco::CaloRecHitHostCollection::View::element to, const HBHERecHit& from)
+  void CaloRecHitSoAProducer<HCAL>::ConvertRecHit(reco::CaloRecHitHostCollection::View::element to, const HBHERecHit& from)
   {
     // Fill SoA from HCAL rec hit
     to.detId()  = from.id().rawId();
@@ -73,7 +76,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
   }
 
   template<>
-  void CaloRecHitSoAProducer<EcalRecHit>::ConvertRecHit(reco::CaloRecHitHostCollection::View::element to, const EcalRecHit& from)
+  void CaloRecHitSoAProducer<ECAL>::ConvertRecHit(reco::CaloRecHitHostCollection::View::element to, const EcalRecHit& from)
   {
     // Fill SoA from ECAL rec hit
     to.detId()  = from.id().rawId();
@@ -82,10 +85,10 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
     to.flags()  = from.flagsBits();
   }
 
-  using HCaloRecHitSoAProducer = CaloRecHitSoAProducer<HBHERecHit>;
-  using ECaloRecHitSoAProducer = CaloRecHitSoAProducer<EcalRecHit>;
+  using HCALRecHitSoAProducer = CaloRecHitSoAProducer<HCAL>;
+  using ECALRecHitSoAProducer = CaloRecHitSoAProducer<ECAL>;
 }  // namespace ALPAKA_ACCELERATOR_NAMESPACE
 
 #include "HeterogeneousCore/AlpakaCore/interface/alpaka/MakerMacros.h"
-DEFINE_FWK_ALPAKA_MODULE(HCaloRecHitSoAProducer);
-DEFINE_FWK_ALPAKA_MODULE(ECaloRecHitSoAProducer);
+DEFINE_FWK_ALPAKA_MODULE(HCALRecHitSoAProducer);
+DEFINE_FWK_ALPAKA_MODULE(ECALRecHitSoAProducer);

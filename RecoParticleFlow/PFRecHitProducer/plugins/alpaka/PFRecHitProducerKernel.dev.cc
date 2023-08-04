@@ -37,12 +37,12 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
         ConstructPFRecHit(pfRecHits[j], recHits[i]);
 
         // Fill denseId -> pfRecHit index map
-        const uint32_t denseId = CAL::detId2denseId(pfRecHits[j].detId()) ;
+        const uint32_t denseId = CAL::detId2denseId(pfRecHits.detId(j)) ;
         if(denseId <= CAL::SIZE)
           denseId2pfRecHit[denseId] = j;
         else
           printf("detId %u leads to invalid denseId %u. Allowed range [%u,%u)\n",
-            pfRecHits[j].detId(), denseId, 0, CAL::SIZE);
+            pfRecHits.detId(j), denseId, 0, CAL::SIZE);
       }
     }
 
@@ -136,20 +136,20 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
 
       // Assign position information and associate neighbours
       for(int32_t i : cms::alpakatools::elements_with_stride(acc, *num_pfRecHits)) {
-        const uint32_t denseId = CAL::detId2denseId(pfRecHits[i].detId());
+        const uint32_t denseId = CAL::detId2denseId(pfRecHits.detId(i));
 
-        pfRecHits[i].x() = topology[denseId].positionX();
-        pfRecHits[i].y() = topology[denseId].positionY();
-        pfRecHits[i].z() = topology[denseId].positionZ();
+        pfRecHits.x(i) = topology.positionX(denseId);
+        pfRecHits.y(i) = topology.positionY(denseId);
+        pfRecHits.z(i) = topology.positionZ(denseId);
 
         for(uint32_t n = 0; n < 8; n++)
         {
-          pfRecHits[i].neighbours()(n) = -1;
-          const uint32_t denseId_neighbour = topology[denseId].neighbours()(n);
+          pfRecHits.neighbours(i)(n) = -1;
+          const uint32_t denseId_neighbour = topology.neighbours(denseId)(n);
           if(denseId_neighbour != 0xffffffff) {
             const uint32_t pfRecHit_neighbour = denseId2pfRecHit[denseId_neighbour];
             if(pfRecHit_neighbour != 0xffffffff)
-              pfRecHits[i].neighbours()(n) = (int32_t)pfRecHit_neighbour;
+              pfRecHits.neighbours(i)(n) = (int32_t)pfRecHit_neighbour;
           }
         }
       }
@@ -179,7 +179,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
     const uint32_t items = 64;
     const uint32_t groups = std::is_same_v<Device, alpaka::DevCpu> ? 1 : cms::alpakatools::divide_up_by(num_recHits, items);
     const auto work_div = cms::alpakatools::make_workdiv<Acc1D>(groups, items);
-
+    
     alpaka::exec<Acc1D>(queue, work_div, PFRecHitProducerKernelImpl1<CAL>{},
       params.view(), topology.view(), recHits.view(), num_recHits, pfRecHits.view(), denseId2pfRecHit.data(), num_pfRecHits.data());
     alpaka::exec<Acc1D>(queue, work_div, PFRecHitProducerKernelImpl2<CAL>{},

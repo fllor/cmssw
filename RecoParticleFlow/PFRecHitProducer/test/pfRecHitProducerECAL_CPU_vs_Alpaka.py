@@ -219,7 +219,7 @@ else:
     sys.exit(1)
 
 # Convert legacy CaloRecHits to CaloRecHitSoA
-process.hltParticleFlowRecHitToSoA = cms.EDProducer(alpaka_backend_str % "ECaloRecHitSoAProducer",
+process.hltParticleFlowRecHitToSoA = cms.EDProducer(alpaka_backend_str % "ECALRecHitSoAProducer",
     #src = cms.InputTag("hltEcalRecHit","EcalRecHitsEB"),    # FOR NOW ONLY BARREL
     src = cms.InputTag("hltEcalRecHit","EcalRecHitsEE"), # endcap
     synchronise = cms.bool(args.synchronise)

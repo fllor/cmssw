@@ -222,7 +222,7 @@ print("Selected backend:", backend)
 
 if backend != "legacy":
     # Convert legacy CaloRecHits to CaloRecHitSoA
-    process.hltParticleFlowRecHitToSoA = cms.EDProducer(alpaka_backend_str % "CaloRecHitSoAProducer",
+    process.hltParticleFlowRecHitToSoA = cms.EDProducer(alpaka_backend_str % "HCALRecHitSoAProducer",
         src = cms.InputTag("hltHbhereco"),
         synchronise = cms.bool(args.synchronise)
     )

@@ -61,16 +61,16 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
           const uint32_t denseId = CAL::detId2denseId(detId);
 
           const GlobalPoint pos = geo->getGeometry(detId)->getPosition();
-          view[denseId].positionX() = pos.x();
-          view[denseId].positionY() = pos.y();
-          view[denseId].positionZ() = pos.z();
+          view.positionX(denseId) = pos.x();
+          view.positionY(denseId) = pos.y();
+          view.positionZ(denseId) = pos.z();
 
           for (uint32_t n = 0; n < 8; n++) {
             uint32_t neighDetId = GetNeighbourDetId(detId, n, *topo);
-            if (CAL::IsValidDetId(neighDetId))
-              view[denseId].neighbours()(n) = CAL::detId2denseId(neighDetId);
+            if (CAL::detIdInRange(neighDetId))
+              view.neighbours(denseId)(n) = CAL::detId2denseId(neighDetId);
             else
-              view[denseId].neighbours()(n) = 0xffffffff;
+              view.neighbours(denseId)(n) = 0xffffffff;
           }
         }
       }
@@ -81,9 +81,9 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
           for (auto const detId : geom.getValidDetIds(CAL::DetectorId, subdet)) {
             const uint32_t denseId = CAL::detId2denseId(detId);
             for (uint32_t n = 0; n < 8; n++) {
-              const reco::PFRecHitsTopologyNeighbours& neighboursOfNeighbour = view[view[denseId].neighbours()[n]].neighbours();
+              const reco::PFRecHitsTopologyNeighbours& neighboursOfNeighbour = view.neighbours(view.neighbours(denseId)[n]);
               if(std::find(neighboursOfNeighbour.begin(), neighboursOfNeighbour.end(), denseId) == neighboursOfNeighbour.end())
-                view[denseId].neighbours()[n] = 0xffffffff;
+                view.neighbours(denseId)[n] = 0xffffffff;
             }
           }
 
