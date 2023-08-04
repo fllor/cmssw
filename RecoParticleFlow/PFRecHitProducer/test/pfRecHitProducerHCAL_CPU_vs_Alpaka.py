@@ -239,12 +239,14 @@ process.hltParticleFlowRecHitParamsESProducer = cms.ESProducer(alpaka_backend_st
     energyThresholdsHB = cms.vdouble( 0.1, 0.2, 0.3, 0.3 ),
     energyThresholdsHE = cms.vdouble( 0.1, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2 )
 )
-process.hltParticleFlowRecHitTopologyESProducer = cms.ESProducer(alpaka_backend_str % "PFRecHitHCALTopologyESProducer"#,
-    #hcalEnums = cms.vint32(1, 2)
-)
+process.hltParticleFlowRecHitTopologyESProducer = cms.ESProducer(alpaka_backend_str % "PFRecHitHCALTopologyESProducer")
 process.hltParticleFlowPFRecHitAlpaka = cms.EDProducer(alpaka_backend_str % "PFRecHitProducerAlpakaHCAL",
-    src = cms.InputTag("hltParticleFlowRecHitToSoA"),
-    params = cms.ESInputTag("hltParticleFlowRecHitParamsESProducer:"),
+    producers = cms.VPSet(
+        cms.PSet(
+            src = cms.InputTag("hltParticleFlowRecHitToSoA"),
+            params = cms.ESInputTag("hltParticleFlowRecHitParamsESProducer:"),
+        )
+    ),
     topology = cms.ESInputTag("hltParticleFlowRecHitTopologyESProducer:"),
     synchronise = cms.bool(args.synchronise)
 )

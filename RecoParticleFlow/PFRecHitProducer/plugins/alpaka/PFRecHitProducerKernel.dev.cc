@@ -9,28 +9,23 @@
 namespace ALPAKA_ACCELERATOR_NAMESPACE {
   using namespace ParticleFlowRecHitProducerAlpaka;
 
-  template<typename CAL>
-  class PFRecHitProducerKernelImpl1 {
-  public:
+  template<typename CAL> struct PFRecHitProducerKernelImpl1 {
     template <typename TAcc, typename = std::enable_if_t<alpaka::isAccelerator<TAcc>>>
     ALPAKA_FN_ACC void operator()(const TAcc& acc,
                                   const typename CAL::ParameterType::ConstView params,
-                                  const typename CAL::TopologyTypeDevice::ConstView topology,
-                                  const CaloRecHitDeviceCollection::ConstView recHits, int32_t num_recHits,
+                                  const CaloRecHitDeviceCollection::ConstView recHits,
                                   PFRecHitDeviceCollection::View pfRecHits,
                                   uint32_t* __restrict__ denseId2pfRecHit,
                                   uint32_t* __restrict__ num_pfRecHits) const {
-      const int32_t num_blocks = alpaka::getWorkDiv<alpaka::Grid, alpaka::Blocks>(acc)[0u];
-
       // Strided loop over CaloRecHits
-      for (int32_t i : cms::alpakatools::elements_with_stride(acc, num_recHits)) {
+      for (int32_t i : cms::alpakatools::elements_with_stride(acc, recHits.metadata().size())) {
         // Check energy thresholds (specialised for HCAL/ECAL)
         if(!ApplyCuts(recHits[i], params))
           continue;
 
         // Use the appropriate synchronisation for the kernel layout
-        const uint32_t j =
-          (num_blocks == 1) ? alpaka::atomicAdd(acc, num_pfRecHits, 1u, alpaka::hierarchy::Blocks{})
+        const uint32_t j = cms::alpakatools::requires_single_thread_per_block_v<Acc1D>
+                            ? alpaka::atomicAdd(acc, num_pfRecHits, 1u, alpaka::hierarchy::Blocks{})
                             : alpaka::atomicAdd(acc, num_pfRecHits, 1u, alpaka::hierarchy::Grids{});
 
         // Construct PFRecHit from CAL recHit (specialised for HCAL/ECAL)
@@ -120,13 +115,10 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
       pfrh.layer() = PFLayer::NONE;
   }
 
-  template<typename CAL>
-  class PFRecHitProducerKernelImpl2 {
-  public:
+  template<typename CAL> struct PFRecHitProducerKernelImpl2 {
     template <typename TAcc, typename = std::enable_if_t<alpaka::isAccelerator<TAcc>>>
     ALPAKA_FN_ACC void operator()(const TAcc& acc,
                                   const typename CAL::TopologyTypeDevice::ConstView topology,
-                                  const CaloRecHitDeviceCollection::ConstView recHits, int32_t num_recHits,
                                   PFRecHitDeviceCollection::View pfRecHits,
                                   const uint32_t* __restrict__ denseId2pfRecHit,
                                   uint32_t* __restrict__ num_pfRecHits) const {
@@ -159,32 +151,40 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
   template<typename CAL>
   PFRecHitProducerKernel<CAL>::PFRecHitProducerKernel(Queue& queue)
     : denseId2pfRecHit(cms::alpakatools::make_device_buffer<uint32_t[]>(queue, CAL::SIZE)),
-      num_pfRecHits(cms::alpakatools::make_device_buffer<uint32_t>(queue)) {
+      num_pfRecHits(cms::alpakatools::make_device_buffer<uint32_t>(queue)),
+      work_div(cms::alpakatools::make_workdiv<Acc1D>(1, 1)) {
   }
 
   template<typename CAL>
-  void PFRecHitProducerKernel<CAL>::execute(const Device& device, Queue& queue,
-    const typename CAL::ParameterType& params,
-    const typename CAL::TopologyTypeDevice& topology,
-    const CaloRecHitDeviceCollection& recHits,
-    PFRecHitDeviceCollection& pfRecHits) {
-
+  void PFRecHitProducerKernel<CAL>::prepare_event(Queue& queue, const uint32_t num_recHits) {
     alpaka::memset(queue, denseId2pfRecHit, 0xff);  // Reset denseId -> pfRecHit index map
     alpaka::memset(queue, num_pfRecHits, 0x00);     // Reset global pfRecHit counter
 
     // Use only one block on the synchronous CPU backend, because there is no
     // performance gain in using multiple blocks, but there is a significant
     // penalty due to the more complex synchronisation.
-    const uint32_t num_recHits = recHits->metadata().size();
     const uint32_t items = 64;
-    const uint32_t groups = std::is_same_v<Device, alpaka::DevCpu> ? 1 : cms::alpakatools::divide_up_by(num_recHits, items);
-    const auto work_div = cms::alpakatools::make_workdiv<Acc1D>(groups, items);
-    
-    alpaka::exec<Acc1D>(queue, work_div, PFRecHitProducerKernelImpl1<CAL>{},
-      params.view(), topology.view(), recHits.view(), num_recHits, pfRecHits.view(), denseId2pfRecHit.data(), num_pfRecHits.data());
-    alpaka::exec<Acc1D>(queue, work_div, PFRecHitProducerKernelImpl2<CAL>{},
-      topology.view(), recHits.view(), num_recHits, pfRecHits.view(), denseId2pfRecHit.data(), num_pfRecHits.data());
+    const uint32_t groups = cms::alpakatools::requires_single_thread_per_block_v<Acc1D> ? 1 : cms::alpakatools::divide_up_by(num_recHits, items);
+    work_div = cms::alpakatools::make_workdiv<Acc1D>(groups, items);
   }
+
+  template<typename CAL>
+  void PFRecHitProducerKernel<CAL>::process_rec_hits(Queue& queue,
+    const CaloRecHitDeviceCollection& recHits,
+    const typename CAL::ParameterType& params,
+    PFRecHitDeviceCollection& pfRecHits) {
+    alpaka::exec<Acc1D>(queue, work_div, PFRecHitProducerKernelImpl1<CAL>{},
+      params.view(), recHits.view(), pfRecHits.view(), denseId2pfRecHit.data(), num_pfRecHits.data());
+  }
+
+  template<typename CAL>
+  void PFRecHitProducerKernel<CAL>::associate_topology_info(Queue& queue,
+    const typename CAL::TopologyTypeDevice& topology,
+    PFRecHitDeviceCollection& pfRecHits) {
+    alpaka::exec<Acc1D>(queue, work_div, PFRecHitProducerKernelImpl2<CAL>{},
+      topology.view(), pfRecHits.view(), denseId2pfRecHit.data(), num_pfRecHits.data());
+  }
+
 
   // Instantiate templates
   template class PFRecHitProducerKernel<HCAL>;

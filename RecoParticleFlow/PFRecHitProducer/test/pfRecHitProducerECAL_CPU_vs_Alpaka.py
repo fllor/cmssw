@@ -190,12 +190,12 @@ process.hltParticleFlowRecHitECAL = cms.EDProducer("PFRecHitProducer",
         endcap = cms.PSet( )
     ),
     producers = cms.VPSet(
-          #cms.PSet(
-          #  name = cms.string("PFEBRecHitCreator"),
-          #  src  = cms.InputTag("hltEcalRecHit","EcalRecHitsEB"),
-          #  srFlags = cms.InputTag(""),
-          #  qualityTests = qualityTestsECAL
-          #)#,
+          cms.PSet(
+            name = cms.string("PFEBRecHitCreator"),
+            src  = cms.InputTag("hltEcalRecHit","EcalRecHitsEB"),
+            srFlags = cms.InputTag(""),
+            qualityTests = qualityTestsECAL
+          ),
           cms.PSet(
             name = cms.string("PFEERecHitCreator"),
             src  = cms.InputTag("hltEcalRecHit","EcalRecHitsEE"),
@@ -219,9 +219,12 @@ else:
     sys.exit(1)
 
 # Convert legacy CaloRecHits to CaloRecHitSoA
-process.hltParticleFlowRecHitToSoA = cms.EDProducer(alpaka_backend_str % "ECALRecHitSoAProducer",
-    #src = cms.InputTag("hltEcalRecHit","EcalRecHitsEB"),    # FOR NOW ONLY BARREL
-    src = cms.InputTag("hltEcalRecHit","EcalRecHitsEE"), # endcap
+process.hltParticleFlowRecHitEBToSoA = cms.EDProducer(alpaka_backend_str % "ECALRecHitSoAProducer",
+    src = cms.InputTag("hltEcalRecHit","EcalRecHitsEB"),
+    synchronise = cms.bool(args.synchronise)
+)
+process.hltParticleFlowRecHitEEToSoA = cms.EDProducer(alpaka_backend_str % "ECALRecHitSoAProducer",
+    src = cms.InputTag("hltEcalRecHit","EcalRecHitsEE"),
     synchronise = cms.bool(args.synchronise)
 )
 
@@ -239,8 +242,16 @@ process.pfRecHitHCALTopologyAlpakaESRcdESSource = cms.ESSource('EmptyESSource',
 process.hltParticleFlowRecHitParamsESProducer = cms.ESProducer(alpaka_backend_str % "PFRecHitECALParamsESProducer")
 process.hltParticleFlowRecHitTopologyESProducer = cms.ESProducer(alpaka_backend_str % "PFRecHitECALTopologyESProducer")
 process.hltParticleFlowPFRecHitAlpaka = cms.EDProducer(alpaka_backend_str % "PFRecHitProducerAlpakaECAL",
-    src = cms.InputTag("hltParticleFlowRecHitToSoA"),
-    params = cms.ESInputTag("hltParticleFlowRecHitParamsESProducer:"),
+    producers = cms.VPSet(
+        cms.PSet(
+            src = cms.InputTag("hltParticleFlowRecHitEBToSoA"),
+            params = cms.ESInputTag("hltParticleFlowRecHitParamsESProducer:")
+        ),
+        cms.PSet(
+            src = cms.InputTag("hltParticleFlowRecHitEEToSoA"),
+            params = cms.ESInputTag("hltParticleFlowRecHitParamsESProducer:")
+        )
+    ),
     topology = cms.ESInputTag("hltParticleFlowRecHitTopologyESProducer:"),
     synchronise = cms.bool(args.synchronise)
 )
@@ -328,7 +339,8 @@ process.FEVTDEBUGHLToutput.outputCommands.append('keep *_hltParticleFlowPFRecHit
 # Path/sequence definitions
 process.HBHEPFCPUGPUTask = cms.Path(
     process.hltParticleFlowRecHitECAL       # Construct PFRecHits on CPU
-    +process.hltParticleFlowRecHitToSoA     # Convert legacy CaloRecHits to SoA and copy to device
+    +process.hltParticleFlowRecHitEBToSoA   # Convert legacy CaloRecHits to SoA and copy to device
+    +process.hltParticleFlowRecHitEEToSoA   # Convert legacy CaloRecHits to SoA and copy to device
     +process.hltParticleFlowPFRecHitAlpaka  # Construct PFRecHits on device
     +process.hltParticleFlowPFRecHitComparison  # Validate Alpaka vs CPU
     #+process.htlParticleFlowAlpakaToLegacyPFRecHits             # Convert Alpaka PFRecHits to legacy format
