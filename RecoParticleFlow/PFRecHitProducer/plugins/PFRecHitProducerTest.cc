@@ -48,10 +48,10 @@ private:
     return std::visit([](auto& c) -> size_t {return c->size();}, collection);
   };
 
-  edm::EDGetTokenT<reco::CaloRecHitHostCollection> caloRecHitsToken;
+  std::optional<edm::EDGetTokenT<reco::CaloRecHitHostCollection>> caloRecHitsToken{};
   GenericPFRecHitToken pfRecHitsTokens[2];
 
-  void DumpEvent(reco::CaloRecHitHostCollection::ConstView, const GenericCollection&, const GenericCollection&);
+  void DumpEvent(const edm::Event&, const GenericCollection&, const GenericCollection&);
   int32_t num_events = 0, num_errors = 0;
   std::map<int32_t, uint32_t> errors;
   const std::string title;
@@ -80,11 +80,13 @@ private:
 
 
 PFRecHitProducerTest::PFRecHitProducerTest(const edm::ParameterSet& conf)
-    : caloRecHitsToken(consumes(conf.getUntrackedParameter<edm::InputTag>("caloRecHits"))),
-      title(conf.getUntrackedParameter<std::string>("title")),            // identifier added to final printout
+    : title(conf.getUntrackedParameter<std::string>("title")),            // identifier added to final printout
       dumpFirstEvent(conf.getUntrackedParameter<bool>("dumpFirstEvent")), // print PFRecHits from first event
       dumpFirstError(conf.getUntrackedParameter<bool>("dumpFirstError"))  // print PFRecHits from first event that yields an error
 {
+  if(conf.existsAs<edm::InputTag>("caloRecHits"))
+    caloRecHitsToken.emplace(consumes(conf.getUntrackedParameter<edm::InputTag>("caloRecHits")));
+
   const edm::InputTag input[2] = {
     conf.getUntrackedParameter<edm::InputTag>("pfRecHitsSource1"),
     conf.getUntrackedParameter<edm::InputTag>("pfRecHitsSource2")
@@ -116,12 +118,7 @@ PFRecHitProducerTest::~PFRecHitProducerTest() {
     errors[1], errors[2], errors[3], errors[4], errors[5]);
 }
 
-void PFRecHitProducerTest::analyze(edm::Event const& event, const edm::EventSetup&) {
-  // Rec Hits
-  edm::Handle<reco::CaloRecHitHostCollection> caloRecHits;
-  event.getByToken(caloRecHitsToken, caloRecHits);
-
-  // PF Rec Hits
+void PFRecHitProducerTest::analyze(const edm::Event& event, const edm::EventSetup&) {
   GenericHandle pfRecHitsHandles[2];
   GenericCollection pfRecHits[2];
   for(int i = 0; i < 2; i++)
@@ -189,7 +186,7 @@ void PFRecHitProducerTest::analyze(edm::Event const& event, const edm::EventSetu
   }
 
   if(num_events == 0 && dumpFirstEvent)
-    DumpEvent(caloRecHits->view(), pfRecHits[0], pfRecHits[1]);
+    DumpEvent(event, pfRecHits[0], pfRecHits[1]);
 
   if(error)
   {
@@ -202,7 +199,7 @@ void PFRecHitProducerTest::analyze(edm::Event const& event, const edm::EventSetu
       //  4 different number of neighbours
       //  5 neighbours different (different order?)
       printf("Error: %d\n", error);
-      DumpEvent(caloRecHits->view(), pfRecHits[0], pfRecHits[1]);
+      DumpEvent(event, pfRecHits[0], pfRecHits[1]);
     }
     num_errors++;
     errors[error]++;
@@ -210,11 +207,17 @@ void PFRecHitProducerTest::analyze(edm::Event const& event, const edm::EventSetu
   num_events++;
 }
 
-void PFRecHitProducerTest::DumpEvent(reco::CaloRecHitHostCollection::ConstView caloRecHits,
+void PFRecHitProducerTest::DumpEvent(const edm::Event& event,
   const GenericCollection& pfRecHits1, const GenericCollection& pfRecHits2) {
-  //printf("Found %d recHits\n", caloRecHits.metadata().size());
-  //for (int i = 0; i < caloRecHits.metadata().size(); i++)
-  //  printf("recHit %4d detId:%u energy:%f time:%f flags:%d\n", i, caloRecHits.detId(i), caloRecHits.energy(i), caloRecHits.time(i), caloRecHits.flags(i));
+  if(caloRecHitsToken) {
+    edm::Handle<reco::CaloRecHitHostCollection> caloRecHits;
+    event.getByToken(*caloRecHitsToken, caloRecHits);
+    const reco::CaloRecHitHostCollection::ConstView view = caloRecHits->view();
+    printf("Found %d recHits\n", view.metadata().size());
+    for (int i = 0; i < view.metadata().size(); i++)
+      printf("recHit %4d detId:%u energy:%f time:%f flags:%d\n", i, view.detId(i), view.energy(i), view.time(i), view.flags(i));\
+  }
+
   printf("Found %zd/%zd pfRecHits from first/second origin\n", GenericCollectionSize(pfRecHits1), GenericCollectionSize(pfRecHits2));
   for (size_t i = 0; i < GenericCollectionSize(pfRecHits1); i++)
     GenericPFRecHit::Construct(pfRecHits1, i).Print("First", i);
@@ -224,14 +227,14 @@ void PFRecHitProducerTest::DumpEvent(reco::CaloRecHitHostCollection::ConstView c
 
 void PFRecHitProducerTest::fillDescriptions(edm::ConfigurationDescriptions& descriptions) {
   edm::ParameterSetDescription desc;
-  desc.addUntracked<edm::InputTag>("caloRecHits");
-  desc.addUntracked<edm::InputTag>("pfRecHitsSource1");
-  desc.addUntracked<edm::InputTag>("pfRecHitsSource2");
-  desc.addUntracked<std::string>("pfRecHitsType1", "legacy");
-  desc.addUntracked<std::string>("pfRecHitsType2", "alpaka");
-  desc.addUntracked<std::string>("title", "");
-  desc.addUntracked<bool>("dumpFirstEvent", false);
-  desc.addUntracked<bool>("dumpFirstError", false);
+  desc.addOptionalUntracked<edm::InputTag>("caloRecHits");// CaloRecHitSoA, if supplied, it is dumped alongside the PFRecHits
+  desc.addUntracked<edm::InputTag>("pfRecHitsSource1");   // First PFRecHit list for comparison
+  desc.addUntracked<edm::InputTag>("pfRecHitsSource2");   // Second PFRecHit list for comparison
+  desc.addUntracked<std::string>("pfRecHitsType1", "legacy"); // Format of first PFRecHit list (legacy or alpaka)
+  desc.addUntracked<std::string>("pfRecHitsType2", "alpaka"); // Format of second PFRecHit list (legacy or alpaka)
+  desc.addUntracked<std::string>("title", "");            // Module name for printout
+  desc.addUntracked<bool>("dumpFirstEvent", false);       // Dump PFRecHits of first event, regardless of result of comparison
+  desc.addUntracked<bool>("dumpFirstError", false);       // Dump PFRecHits upon first encountered error
   descriptions.addDefault(desc);
 }
 

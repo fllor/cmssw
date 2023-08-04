@@ -248,7 +248,6 @@ process.hltParticleFlowPFRecHitAlpaka = cms.EDProducer(alpaka_backend_str % "PFR
 # Compare legacy PFRecHits to PFRecHitsSoA
 from DQMServices.Core.DQMEDAnalyzer import DQMEDAnalyzer
 process.hltParticleFlowPFRecHitComparison = DQMEDAnalyzer("PFRecHitProducerTest",
-    caloRecHits = cms.untracked.InputTag("hltParticleFlowRecHitToSoA"),
     pfRecHitsSource1 = cms.untracked.InputTag("hltParticleFlowRecHitECAL"),
     pfRecHitsSource2 = cms.untracked.InputTag("hltParticleFlowPFRecHitAlpaka"),
     pfRecHitsType1 = cms.untracked.string("legacy"),
@@ -263,7 +262,6 @@ process.htlParticleFlowAlpakaToLegacyPFRecHits = cms.EDProducer("LegacyPFRecHitP
     src = cms.InputTag("hltParticleFlowPFRecHitAlpaka")
 )
 process.htlParticleFlowAlpakaToLegacyPFRecHitsComparison1 = DQMEDAnalyzer("PFRecHitProducerTest",
-    caloRecHits = cms.untracked.InputTag("hltParticleFlowRecHitToSoA"),
     pfRecHitsSource1 = cms.untracked.InputTag("hltParticleFlowRecHitHBHE"),
     pfRecHitsSource2 = cms.untracked.InputTag("htlParticleFlowAlpakaToLegacyPFRecHits"),
     pfRecHitsType1 = cms.untracked.string("legacy"),
@@ -273,7 +271,6 @@ process.htlParticleFlowAlpakaToLegacyPFRecHitsComparison1 = DQMEDAnalyzer("PFRec
     dumpFirstError = cms.untracked.bool(args.debug == -2)
 )
 process.htlParticleFlowAlpakaToLegacyPFRecHitsComparison2 = DQMEDAnalyzer("PFRecHitProducerTest",
-    caloRecHits = cms.untracked.InputTag("hltParticleFlowRecHitToSoA"),
     pfRecHitsSource1 = cms.untracked.InputTag("hltParticleFlowPFRecHitAlpaka"),
     pfRecHitsSource2 = cms.untracked.InputTag("htlParticleFlowAlpakaToLegacyPFRecHits"),
     pfRecHitsType1 = cms.untracked.string("alpaka"),
