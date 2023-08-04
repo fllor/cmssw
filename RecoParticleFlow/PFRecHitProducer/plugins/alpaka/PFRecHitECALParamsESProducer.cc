@@ -2,7 +2,7 @@
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 #include "HeterogeneousCore/AlpakaCore/interface/alpaka/ESProducer.h"
 #include "RecoParticleFlow/PFRecHitProducer/interface/PFRecHitParamsRecord.h"
-#include "RecoParticleFlow/PFRecHitProducer/interface/alpaka/PFRecHitParamsAlpakaESData.h"
+#include "RecoParticleFlow/PFRecHitProducer/interface/PFRecHitParamsHostCollection.h"
 #include "RecoParticleFlow/PFRecHitProducer/interface/alpaka/CalorimeterDefinitions.h"
 #include "CondFormats/EcalObjects/interface/EcalPFRecHitThresholds.h"
 
@@ -24,9 +24,9 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
       descriptions.addWithDefaultLabel(desc);
     }
 
-    std::unique_ptr<PFRecHitECALParamsAlpakaESDataHost> produce(const PFRecHitECALParamsRecord& iRecord) {
+    std::unique_ptr<reco::PFRecHitECALParamsHostCollection> produce(const PFRecHitECALParamsRecord& iRecord) {
       const auto& thresholds = iRecord.get(thresholdsToken);
-      auto product = std::make_unique<PFRecHitECALParamsAlpakaESDataHost>(ECAL::SIZE, cms::alpakatools::host());
+      auto product = std::make_unique<reco::PFRecHitECALParamsHostCollection>(ECAL::SIZE, cms::alpakatools::host());
       for (uint32_t denseId = 0; denseId < ECAL::BARREL::SIZE; denseId++)
         product->view().energyThresholds()[denseId] = thresholds.barrel(denseId);
       for (uint32_t denseId = 0; denseId < ECAL::ENDCAP::SIZE; denseId++)

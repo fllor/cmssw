@@ -55,7 +55,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
 
   template<> ALPAKA_FN_ACC bool PFRecHitProducerKernelImpl1<HCAL>::ApplyCuts(
     const CaloRecHitDeviceCollection::ConstView::const_element rh,
-    const PFRecHitHCALParamsAlpakaESDataDevice::ConstView params) {
+    const HCAL::ParameterType::ConstView params) {
     // Reject HCAL recHits below enery threshold
     float threshold = 9999.;
     const uint32_t detId = rh.detId();
@@ -73,7 +73,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
 
   template<> ALPAKA_FN_ACC bool PFRecHitProducerKernelImpl1<ECAL>::ApplyCuts(
     const CaloRecHitDeviceCollection::ConstView::const_element rh,
-    const PFRecHitECALParamsAlpakaESDataDevice::ConstView params) {
+    const ECAL::ParameterType::ConstView params) {
     // Reject ECAL recHits below energy threshold
     if(rh.energy() < params.energyThresholds()[ECAL::detId2denseId(rh.detId())])
       return false;

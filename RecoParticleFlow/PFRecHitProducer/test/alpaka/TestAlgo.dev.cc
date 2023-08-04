@@ -19,8 +19,8 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
   public:
     template <typename TAcc, typename = std::enable_if_t<alpaka::isAccelerator<TAcc>>>
     ALPAKA_FN_ACC void operator()(TAcc const& acc,
-      PFRecHitHCALParamsAlpakaESDataDevice::ConstView params,
-      PFRecHitHCALTopologyAlpakaESDataDevice::ConstView topo) const {
+      PFRecHitHCALParamsDeviceCollection::ConstView params,
+      PFRecHitHCALTopologyDeviceCollection::ConstView topo) const {
       // global index of the thread within the grid
       const int32_t thread = alpaka::getIdx<alpaka::Grid, alpaka::Threads>(acc)[0u];
 
@@ -35,7 +35,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
   };
 
   void TestAlgo::printPFRecHitHCALESData(Queue& queue,
-    PFRecHitHCALParamsAlpakaESDataDevice const& esParams, PFRecHitHCALTopologyAlpakaESDataDevice const& esTopo) const {
+    PFRecHitHCALParamsDeviceCollection const& esParams, PFRecHitHCALTopologyDeviceCollection const& esTopo) const {
     auto workDiv = make_workdiv<Acc1D>(1,1);
     alpaka::exec<Acc1D>(queue, workDiv, PrintPFRecHitHCALESDataKernel{}, esParams.const_view(), esTopo.const_view());
   }

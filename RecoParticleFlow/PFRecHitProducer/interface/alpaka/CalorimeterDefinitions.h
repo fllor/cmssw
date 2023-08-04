@@ -8,8 +8,9 @@
 #include "DataFormats/HcalDetId/interface/HcalSubdetector.h"
 #include "DataFormats/EcalDetId/interface/EcalSubdetector.h"
 
-#include "RecoParticleFlow/PFRecHitProducer/interface/alpaka/PFRecHitParamsAlpakaESData.h"
-#include "RecoParticleFlow/PFRecHitProducer/interface/alpaka/PFRecHitTopologyAlpakaESData.h"
+#include "RecoParticleFlow/PFRecHitProducer/interface/PFRecHitTopologyHostCollection.h"
+#include "RecoParticleFlow/PFRecHitProducer/interface/alpaka/PFRecHitParamsDeviceCollection.h"
+#include "RecoParticleFlow/PFRecHitProducer/interface/alpaka/PFRecHitTopologyDeviceCollection.h"
 #include "RecoParticleFlow/PFRecHitProducer/interface/PFRecHitParamsRecord.h"
 #include "RecoParticleFlow/PFRecHitProducer/interface/PFRecHitTopologyRecord.h"
 
@@ -27,10 +28,10 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
     // These are structs rather than namespaces, such that they can be used as template arguments
     struct HCAL {
       using CaloRecHitType = HBHERecHit;
-      using ParameterType = PFRecHitHCALParamsAlpakaESDataDevice;
+      using ParameterType = PFRecHitHCALParamsDeviceCollection;
       using ParameterRecordType = PFRecHitHCALParamsRecord;
-      using TopologyTypeHost = PFRecHitHCALTopologyAlpakaESDataHost;
-      using TopologyTypeDevice = PFRecHitHCALTopologyAlpakaESDataDevice;
+      using TopologyTypeHost = reco::PFRecHitHCALTopologyHostCollection;
+      using TopologyTypeDevice = PFRecHitHCALTopologyDeviceCollection;
       using TopologyRecordType = PFRecHitHCALTopologyRecord;
 
       static constexpr DetId::Detector DetectorId = DetId::Detector::Hcal;
@@ -118,10 +119,10 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
 
     struct ECAL {
       using CaloRecHitType = EcalRecHit;
-      using ParameterType = PFRecHitECALParamsAlpakaESDataDevice;
+      using ParameterType = PFRecHitECALParamsDeviceCollection;
       using ParameterRecordType = PFRecHitECALParamsRecord;
-      using TopologyTypeHost = PFRecHitECALTopologyAlpakaESDataHost;
-      using TopologyTypeDevice = PFRecHitECALTopologyAlpakaESDataDevice;
+      using TopologyTypeHost = reco::PFRecHitECALTopologyHostCollection;
+      using TopologyTypeDevice = PFRecHitECALTopologyDeviceCollection;
       using TopologyRecordType = PFRecHitECALTopologyRecord;
 
       static constexpr DetId::Detector DetectorId = DetId::Detector::Ecal;
@@ -241,7 +242,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
 
       static constexpr uint32_t SIZE = BARREL::SIZE + ENDCAP::SIZE; // maximum possible ECAL denseId (=75848)
     };
-  }
+  }  // namespace ParticleFlowRecHitProducerAlpaka
 }  // namespace ALPAKA_ACCELERATOR_NAMESPACE
 
 #endif

@@ -7,8 +7,8 @@
 #include "HeterogeneousCore/AlpakaCore/interface/alpaka/EDPutToken.h"
 #include "HeterogeneousCore/AlpakaCore/interface/alpaka/ESGetToken.h"
 #include "HeterogeneousCore/AlpakaInterface/interface/config.h"
-#include "RecoParticleFlow/PFRecHitProducer/interface/alpaka/PFRecHitParamsAlpakaESData.h"
-#include "RecoParticleFlow/PFRecHitProducer/interface/alpaka/PFRecHitTopologyAlpakaESData.h"
+#include "RecoParticleFlow/PFRecHitProducer/interface/alpaka/PFRecHitParamsDeviceCollection.h"
+#include "RecoParticleFlow/PFRecHitProducer/interface/alpaka/PFRecHitTopologyDeviceCollection.h"
 #include "RecoParticleFlow/PFRecHitProducer/interface/PFRecHitParamsRecord.h"
 #include "RecoParticleFlow/PFRecHitProducer/interface/PFRecHitTopologyRecord.h"
 
@@ -43,8 +43,8 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
     }
 
   private:
-    device::ESGetToken<PFRecHitHCALParamsAlpakaESDataDevice, PFRecHitHCALParamsRecord> const esParamsToken_;
-    device::ESGetToken<PFRecHitHCALTopologyAlpakaESDataDevice, PFRecHitHCALTopologyRecord> const esTopoToken_;
+    device::ESGetToken<PFRecHitHCALParamsDeviceCollection, PFRecHitHCALParamsRecord> const esParamsToken_;
+    device::ESGetToken<PFRecHitHCALTopologyDeviceCollection, PFRecHitHCALTopologyRecord> const esTopoToken_;
     device::EDPutToken<portabletest::TestDeviceCollection> devicePutToken_;
 
     TestAlgo algo_;
