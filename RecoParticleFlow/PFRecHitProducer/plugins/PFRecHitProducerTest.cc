@@ -5,13 +5,13 @@
 #include "DataFormats/DetId/interface/DetId.h"
 #include "DataFormats/HcalDetId/interface/HcalDetId.h"
 #include "DataFormats/HcalDetId/interface/HcalSubdetector.h"
-#include "DataFormats/HcalRecHit/interface/HBHERecHit.h"
 #include "DataFormats/ParticleFlowReco/interface/PFRecHit.h"
 #include "FWCore/Framework/interface/Event.h"
 #include "FWCore/Framework/interface/EventSetup.h"
 #include "FWCore/Framework/interface/Frameworkfwd.h"
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 #include "FWCore/ParameterSet/interface/ConfigurationDescriptions.h"
+#include "DataFormats/ParticleFlowReco_Alpaka/interface/CaloRecHitHostCollection.h"
 #include "DataFormats/ParticleFlowReco_Alpaka/interface/PFRecHitHostCollection.h"
 
 #include <cmath>
@@ -48,10 +48,10 @@ private:
     return std::visit([](auto& c) -> size_t {return c->size();}, collection);
   };
 
-  edm::EDGetTokenT<edm::SortedCollection<HBHERecHit>> recHitsToken;
+  edm::EDGetTokenT<reco::CaloRecHitHostCollection> caloRecHitsToken;
   GenericPFRecHitToken pfRecHitsTokens[2];
 
-  void DumpEvent(const GenericCollection&, const GenericCollection&);
+  void DumpEvent(reco::CaloRecHitHostCollection::ConstView, const GenericCollection&, const GenericCollection&);
   int32_t num_events = 0, num_errors = 0;
   std::map<int32_t, uint32_t> errors;
   const std::string title;
@@ -80,8 +80,7 @@ private:
 
 
 PFRecHitProducerTest::PFRecHitProducerTest(const edm::ParameterSet& conf)
-    : recHitsToken(
-          consumes<edm::SortedCollection<HBHERecHit>>(conf.getUntrackedParameter<edm::InputTag>("recHitsSourceCPU"))),
+    : caloRecHitsToken(consumes(conf.getUntrackedParameter<edm::InputTag>("caloRecHits"))),
       title(conf.getUntrackedParameter<std::string>("title")),            // identifier added to final printout
       dumpFirstEvent(conf.getUntrackedParameter<bool>("dumpFirstEvent")), // print PFRecHits from first event
       dumpFirstError(conf.getUntrackedParameter<bool>("dumpFirstError"))  // print PFRecHits from first event that yields an error
@@ -117,14 +116,10 @@ PFRecHitProducerTest::~PFRecHitProducerTest() {
     errors[1], errors[2], errors[3], errors[4], errors[5]);
 }
 
-void PFRecHitProducerTest::analyze(edm::Event const& event, edm::EventSetup const& c) {
+void PFRecHitProducerTest::analyze(edm::Event const& event, const edm::EventSetup&) {
   // Rec Hits
-  //edm::Handle<edm::SortedCollection<HBHERecHit>> recHits;
-  //event.getByToken(recHitsToken, recHits);
-  //printf("Found %zd recHits\n", recHits->size());
-  //fprintf(stderr, "Found %zd recHits\n", recHits->size());
-  //for (size_t i = 0; i < recHits->size(); i++)
-  //  printf("recHit %4lu %u\n", i, recHits->operator[](i).id().rawId());
+  edm::Handle<reco::CaloRecHitHostCollection> caloRecHits;
+  event.getByToken(caloRecHitsToken, caloRecHits);
 
   // PF Rec Hits
   GenericHandle pfRecHitsHandles[2];
@@ -194,7 +189,7 @@ void PFRecHitProducerTest::analyze(edm::Event const& event, edm::EventSetup cons
   }
 
   if(num_events == 0 && dumpFirstEvent)
-    DumpEvent(pfRecHits[0], pfRecHits[1]);
+    DumpEvent(caloRecHits->view(), pfRecHits[0], pfRecHits[1]);
 
   if(error)
   {
@@ -207,7 +202,7 @@ void PFRecHitProducerTest::analyze(edm::Event const& event, edm::EventSetup cons
       //  4 different number of neighbours
       //  5 neighbours different (different order?)
       printf("Error: %d\n", error);
-      DumpEvent(pfRecHits[0], pfRecHits[1]);
+      DumpEvent(caloRecHits->view(), pfRecHits[0], pfRecHits[1]);
     }
     num_errors++;
     errors[error]++;
@@ -215,7 +210,11 @@ void PFRecHitProducerTest::analyze(edm::Event const& event, edm::EventSetup cons
   num_events++;
 }
 
-void PFRecHitProducerTest::DumpEvent(const GenericCollection& pfRecHits1, const GenericCollection& pfRecHits2) {
+void PFRecHitProducerTest::DumpEvent(reco::CaloRecHitHostCollection::ConstView caloRecHits,
+  const GenericCollection& pfRecHits1, const GenericCollection& pfRecHits2) {
+  //printf("Found %d recHits\n", caloRecHits.metadata().size());
+  //for (int i = 0; i < caloRecHits.metadata().size(); i++)
+  //  printf("recHit %4d detId:%u energy:%f time:%f flags:%d\n", i, caloRecHits.detId(i), caloRecHits.energy(i), caloRecHits.time(i), caloRecHits.flags(i));
   printf("Found %zd/%zd pfRecHits from first/second origin\n", GenericCollectionSize(pfRecHits1), GenericCollectionSize(pfRecHits2));
   for (size_t i = 0; i < GenericCollectionSize(pfRecHits1); i++)
     GenericPFRecHit::Construct(pfRecHits1, i).Print("First", i);
@@ -225,7 +224,7 @@ void PFRecHitProducerTest::DumpEvent(const GenericCollection& pfRecHits1, const 
 
 void PFRecHitProducerTest::fillDescriptions(edm::ConfigurationDescriptions& descriptions) {
   edm::ParameterSetDescription desc;
-  desc.addUntracked<edm::InputTag>("recHitsSourceCPU");
+  desc.addUntracked<edm::InputTag>("caloRecHits");
   desc.addUntracked<edm::InputTag>("pfRecHitsSource1");
   desc.addUntracked<edm::InputTag>("pfRecHitsSource2");
   desc.addUntracked<std::string>("pfRecHitsType1", "legacy");
@@ -236,16 +235,15 @@ void PFRecHitProducerTest::fillDescriptions(edm::ConfigurationDescriptions& desc
   descriptions.addDefault(desc);
 }
 
-PFRecHitProducerTest::GenericPFRecHit::GenericPFRecHit(const reco::PFRecHit& pfRecHit) : 
-    detId(pfRecHit.detId()),
+PFRecHitProducerTest::GenericPFRecHit::GenericPFRecHit(const reco::PFRecHit& pfRecHit)
+  : detId(pfRecHit.detId()),
     depth(pfRecHit.depth()),
     layer(pfRecHit.layer()),
     time(pfRecHit.time()),
     energy(pfRecHit.energy()),
     x(pfRecHit.position().x()),
     y(pfRecHit.position().y()),
-    z(pfRecHit.position().z())
-{
+    z(pfRecHit.position().z()) {
   // Fill neighbours4 and neighbours8, then remove elements of neighbours4 from neighbours8
   // This is necessary, because there can be duplicates in the neighbour lists
   // This procedure correctly accounts for these multiplicities
@@ -285,13 +283,13 @@ PFRecHitProducerTest::GenericPFRecHit::GenericPFRecHit(const reco::PFRecHitHostC
 }
 
 void PFRecHitProducerTest::GenericPFRecHit::Print(const char* prefix, size_t idx) {
-  printf("%s %4lu detId:%u depth:%d layer:%d time:%f energy:%f pos:%f,%f,%f neighbours:%lu+%lu(",
+  printf("%s %4lu detId:%u depth:%d layer:%d energy:%f time:%f pos:%f,%f,%f neighbours:%lu+%lu(",
           prefix, idx,
           detId,
           depth,
           layer,
-          time,
           energy,
+          time,
           x, y, z,
           neighbours4.size(), neighbours8.size()
   );
