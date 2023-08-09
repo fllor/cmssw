@@ -59,6 +59,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
         // Fill product
         for (auto const detId : geom.getValidDetIds(CAL::DetectorId, subdet)) {
           const uint32_t denseId = CAL::detId2denseId(detId);
+          assert(denseId <= CAL::SIZE);
 
           const GlobalPoint pos = geo->getGeometry(detId)->getPosition();
           view.positionX(denseId) = pos.x();

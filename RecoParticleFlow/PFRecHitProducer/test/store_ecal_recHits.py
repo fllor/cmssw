@@ -7,7 +7,7 @@ import FWCore.ParameterSet.Config as cms
 
 from Configuration.Eras.Era_Run3_cff import Run3
 
-process = cms.Process('rereHLT',Run3)
+process = cms.Process('rereHLTprepareHCAL',Run3)
 
 # import of standard configurations
 process.load('Configuration.StandardSequences.Services_cff')
@@ -25,15 +25,36 @@ process.load('Configuration.StandardSequences.Accelerators_cff')
 process.load('HeterogeneousCore.AlpakaCore.ProcessAcceleratorAlpaka_cfi')
 
 process.maxEvents = cms.untracked.PSet(
-    input = cms.untracked.int32(1300),
-    #input = cms.untracked.int32(10000),
+    #input = cms.untracked.int32(5),
+    #input = cms.untracked.int32(100),
+    input = cms.untracked.int32(10000),
     output = cms.optional.untracked.allowed(cms.int32,cms.PSet)
 )
 
 # Input source
 process.source = cms.Source("PoolSource",
-    #fileNames = cms.untracked.vstring('file:/data/user/florkows/hcal_recHits.root'),
-    fileNames = cms.untracked.vstring('file:/data/user/florkows/hcal_recHits_uncompressed.root'),
+    fileNames = cms.untracked.vstring([
+        '/store/relval/CMSSW_13_0_0_pre4/RelValTTbar_14TeV/GEN-SIM-DIGI-RAW/PU_130X_mcRun3_2022_realistic_v2_HS-v4/2590000/04753ba2-a821-43ec-b5e5-39f71c3e666d.root',
+        '/store/relval/CMSSW_13_0_0_pre4/RelValTTbar_14TeV/GEN-SIM-DIGI-RAW/PU_130X_mcRun3_2022_realistic_v2_HS-v4/2590000/0ae805d3-d18a-4e42-b194-3eca35d5af48.root',
+        '/store/relval/CMSSW_13_0_0_pre4/RelValTTbar_14TeV/GEN-SIM-DIGI-RAW/PU_130X_mcRun3_2022_realistic_v2_HS-v4/2590000/0e060b28-dbdb-420f-9f32-150285085ecd.root',
+        '/store/relval/CMSSW_13_0_0_pre4/RelValTTbar_14TeV/GEN-SIM-DIGI-RAW/PU_130X_mcRun3_2022_realistic_v2_HS-v4/2590000/0ea01168-52a6-4be1-9c95-0e3a394f4516.root',
+        '/store/relval/CMSSW_13_0_0_pre4/RelValTTbar_14TeV/GEN-SIM-DIGI-RAW/PU_130X_mcRun3_2022_realistic_v2_HS-v4/2590000/113a010d-5a23-4e64-bf19-96eeaddc5c79.root',
+        '/store/relval/CMSSW_13_0_0_pre4/RelValTTbar_14TeV/GEN-SIM-DIGI-RAW/PU_130X_mcRun3_2022_realistic_v2_HS-v4/2590000/11bbf6a4-5f18-4438-9dcf-a782b3e1ddd2.root',
+        '/store/relval/CMSSW_13_0_0_pre4/RelValTTbar_14TeV/GEN-SIM-DIGI-RAW/PU_130X_mcRun3_2022_realistic_v2_HS-v4/2590000/1550161b-3b14-488f-bef3-ba7083b09554.root',
+        '/store/relval/CMSSW_13_0_0_pre4/RelValTTbar_14TeV/GEN-SIM-DIGI-RAW/PU_130X_mcRun3_2022_realistic_v2_HS-v4/2590000/174d4f9e-826e-47eb-9525-fc95022a6d17.root',
+        '/store/relval/CMSSW_13_0_0_pre4/RelValTTbar_14TeV/GEN-SIM-DIGI-RAW/PU_130X_mcRun3_2022_realistic_v2_HS-v4/2590000/1d20b7ad-7aa9-439d-b109-d16a8911ef6b.root',
+        '/store/relval/CMSSW_13_0_0_pre4/RelValTTbar_14TeV/GEN-SIM-DIGI-RAW/PU_130X_mcRun3_2022_realistic_v2_HS-v4/2590000/1fa10cef-9661-4bc1-bf29-505bf4930cec.root',
+        '/store/relval/CMSSW_13_0_0_pre4/RelValTTbar_14TeV/GEN-SIM-DIGI-RAW/PU_130X_mcRun3_2022_realistic_v2_HS-v4/2590000/219bdf10-8b9a-45b8-8507-bcfd5b9e0769.root',
+        '/store/relval/CMSSW_13_0_0_pre4/RelValTTbar_14TeV/GEN-SIM-DIGI-RAW/PU_130X_mcRun3_2022_realistic_v2_HS-v4/2590000/23e7af8d-a3ac-4203-9384-db44e4efb3c3.root',
+        '/store/relval/CMSSW_13_0_0_pre4/RelValTTbar_14TeV/GEN-SIM-DIGI-RAW/PU_130X_mcRun3_2022_realistic_v2_HS-v4/2590000/282a9817-c8af-4611-8284-2c333fb139d3.root',
+        '/store/relval/CMSSW_13_0_0_pre4/RelValTTbar_14TeV/GEN-SIM-DIGI-RAW/PU_130X_mcRun3_2022_realistic_v2_HS-v4/2590000/293b83b0-35e9-4a6c-87b8-4c8ec199abdf.root',
+        '/store/relval/CMSSW_13_0_0_pre4/RelValTTbar_14TeV/GEN-SIM-DIGI-RAW/PU_130X_mcRun3_2022_realistic_v2_HS-v4/2590000/2e09122c-d08a-46fa-95ca-147a7606e940.root',
+        '/store/relval/CMSSW_13_0_0_pre4/RelValTTbar_14TeV/GEN-SIM-DIGI-RAW/PU_130X_mcRun3_2022_realistic_v2_HS-v4/2590000/2e11b13d-20ea-4d2c-b68b-4595a1a6be96.root',
+        '/store/relval/CMSSW_13_0_0_pre4/RelValTTbar_14TeV/GEN-SIM-DIGI-RAW/PU_130X_mcRun3_2022_realistic_v2_HS-v4/2590000/3076544e-605d-463e-97a9-f4fa5587029e.root',
+        '/store/relval/CMSSW_13_0_0_pre4/RelValTTbar_14TeV/GEN-SIM-DIGI-RAW/PU_130X_mcRun3_2022_realistic_v2_HS-v4/2590000/321e8382-8cc7-4202-a40c-9b446ef3e4b8.root',
+        '/store/relval/CMSSW_13_0_0_pre4/RelValTTbar_14TeV/GEN-SIM-DIGI-RAW/PU_130X_mcRun3_2022_realistic_v2_HS-v4/2590000/33861bb6-e335-4240-bc20-82870726131b.root',
+        '/store/relval/CMSSW_13_0_0_pre4/RelValTTbar_14TeV/GEN-SIM-DIGI-RAW/PU_130X_mcRun3_2022_realistic_v2_HS-v4/2590000/33dba72c-a495-48e6-b46b-25299b23b6c6.root'
+    ]),
     secondaryFileNames = cms.untracked.vstring()
 )
 
@@ -80,7 +101,9 @@ process.FEVTDEBUGHLToutput = cms.OutputModule("PoolOutputModule",
         dataTier = cms.untracked.string('GEN-SIM-DIGI-RAW'),
         filterName = cms.untracked.string('')
     ),
-    fileName = cms.untracked.string('hcal_recHits_processed.root'),
+    #fileName = cms.untracked.string('/data/user/florkows/ecal_recHits.root'),
+    fileName = cms.untracked.string('/data/user/florkows/ecal_recHits_uncompressed.root'),
+    compressionLevel = cms.untracked.int32(0),
     outputCommands = process.FEVTDEBUGHLTEventContent.outputCommands,
     splitLevel = cms.untracked.int32(0)
 )
@@ -142,146 +165,22 @@ if 'MessageLogger' in process.__dict__:
     process.MessageLogger.ThroughputService = cms.untracked.PSet()
     process.MessageLogger.cerr.FastReport = cms.untracked.PSet( limit = cms.untracked.int32( 10000000 ) )
 
-
-
-
-
-import sys
-import argparse
-parser = argparse.ArgumentParser(prog=sys.argv[0], description='Throughput test of PFRecHitProducer with Alpaka')
-parser.add_argument('-b', '--backend', type=str, default='cpu',
-                    help='Alpaka backend. Possible options: legacy, CPU, GPU, auto. Default: CPU')
-parser.add_argument('-s', '--synchronise', action='store_true', default=False,
-                    help='Put synchronisation point at the end of Alpaka modules (for benchmarking performance)')
-parser.add_argument('-t', '--threads', type=int, default=8,
-                    help='Number of threads. Default: 8')
-parser.add_argument('-i', '--iterations', type=int, default=1,
-                    help='How many times to run PFRecHitProducer module (for benchmarking). Default: 1')
-parser.add_argument('-e', '--events', type=int, default=process.maxEvents.input.value(),
-                    help='Number of events to process. Default: %d' % process.maxEvents.input.value())
-args = parser.parse_args(sys.argv[sys.argv.index("--")+1:] if "--" in sys.argv else [])
-backend = args.backend.lower()
-process.maxEvents.input = args.events
-
-#####################################
-##    Legacy PFRecHit producer     ##
-#####################################
-process.hltParticleFlowRecHitHBHE = cms.EDProducer("PFRecHitProducer",
-    navigator = cms.PSet(
-        hcalEnums = cms.vint32(1, 2),
-        name = cms.string('PFRecHitHCALDenseIdNavigator')
-    ),
-    producers = cms.VPSet(cms.PSet(
-        name = cms.string('PFHBHERecHitCreator'),
-        qualityTests = cms.VPSet(
-            cms.PSet(
-                cuts = cms.VPSet(
-                    cms.PSet(
-                        depth = cms.vint32(1, 2, 3, 4),
-                        detectorEnum = cms.int32(1),
-                        threshold = cms.vdouble(0.1, 0.2, 0.3, 0.3)
-                    ),
-                    cms.PSet(
-                        depth = cms.vint32(1, 2, 3, 4, 5, 6, 7),
-                        detectorEnum = cms.int32(2),
-                        threshold = cms.vdouble(0.1, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2)
-                    )
-                ),
-                name = cms.string('PFRecHitQTestHCALThresholdVsDepth')
-            ),
-            cms.PSet(
-                cleaningThresholds = cms.vdouble(0.0),
-                flags = cms.vstring('Standard'),
-                maxSeverities = cms.vint32(11),
-                name = cms.string('PFRecHitQTestHCALChannel')
-            )
-        ),
-        src = cms.InputTag("hltHbhereco")
-    ))
-)
-
-
-#####################################
-##    Alpaka PFRecHit producer     ##
-#####################################
-if backend == "legacy":
-    pass
-elif backend == "cpu":
-    alpaka_backend_str = "alpaka_serial_sync::%s"   # Execute on CPU
-elif backend == "gpu" or backend == "cuda":
-    alpaka_backend_str = "alpaka_cuda_async::%s"    # Execute using CUDA
-elif backend == "auto":
-    alpaka_backend_str = "%s@alpaka"                # Let framework choose
-else:
-    print("Invalid backend:", backend)
-    sys.exit(1)
-print("Selected backend:", backend)
-
-if backend != "legacy":
-    # Convert legacy CaloRecHits to CaloRecHitSoA
-    process.hltParticleFlowRecHitToSoA = cms.EDProducer(alpaka_backend_str % "HCALRecHitSoAProducer",
-        src = cms.InputTag("hltHbhereco"),
-        synchronise = cms.bool(args.synchronise)
-    )
-
-    # Construct PFRecHitsSoA
-    process.jobConfAlpakaRcdESSource = cms.ESSource('EmptyESSource',
-        recordName = cms.string('PFRecHitHCALParamsRecord'),
-        iovIsRunNotTime = cms.bool(True),
-        firstValid = cms.vuint32(1)
-    )
-    process.pfRecHitHBHETopologyAlpakaESRcdESSource = cms.ESSource('EmptyESSource',
-    recordName = cms.string('PFRecHitHCALTopologyRecord'),
-    iovIsRunNotTime = cms.bool(True),
-    firstValid = cms.vuint32(1)
-    )
-    process.hltParticleFlowRecHitParamsESProducer = cms.ESProducer(alpaka_backend_str % "PFRecHitHCALParamsESProducer",
-        energyThresholdsHB = cms.vdouble( 0.1, 0.2, 0.3, 0.3 ),
-        energyThresholdsHE = cms.vdouble( 0.1, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2 )
-    )
-    process.hltParticleFlowRecHitTopologyESProducer = cms.ESProducer(alpaka_backend_str % "PFRecHitHCALTopologyESProducer")
-    process.hltParticleFlowPFRecHitAlpaka = cms.EDProducer(alpaka_backend_str % "PFRecHitProducerAlpakaHCAL",
-        producers = cms.VPSet(
-            cms.PSet(
-                src = cms.InputTag("hltParticleFlowRecHitToSoA"),
-                params = cms.ESInputTag("hltParticleFlowRecHitParamsESProducer:"),
-            )
-        ),
-        topology = cms.ESInputTag("hltParticleFlowRecHitTopologyESProducer:"),
-        synchronise = cms.bool(args.synchronise)
-    )
-
 #
 # Additional customization
 process.FEVTDEBUGHLToutput.outputCommands = cms.untracked.vstring('drop *_*_*_*')
-#process.FEVTDEBUGHLToutput.outputCommands.append('keep *_*ParticleFlow*HBHE*_*_*')
-#process.FEVTDEBUGHLToutput.outputCommands.append('keep *_*HbherecoLegacy*_*_*')
-##process.FEVTDEBUGHLToutput.outputCommands.append('keep *_*HbherecoFromGPU*_*_*')
-#process.FEVTDEBUGHLToutput.outputCommands.append('keep *_*Hbhereco*_*_*')
-#process.FEVTDEBUGHLToutput.outputCommands.append('keep *_hltParticleFlowRecHitToSoA_*_*')
-#process.FEVTDEBUGHLToutput.outputCommands.append('keep *_hltParticleFlowPFRecHitAlpaka_*_*')
+process.FEVTDEBUGHLToutput.outputCommands.append('keep *_hltEcalRecHit_*_*')
+#process.FEVTDEBUGHLToutput.outputCommands.append('keep *_hltHbherecoLegacy_*_*')
 
 #
 # Run only localreco, PFRecHit and PFCluster producers for HBHE only
 #process.source.fileNames = cms.untracked.vstring('file:/cms/data/hatake/ana/PF/GPU/CMSSW_12_4_0_v2/src/test/v21/GPU/reHLT_HLT.root ')
 
 # Path/sequence definitions
-if backend == "legacy":
-    path = process.hltParticleFlowRecHitHBHE
-    for i in range(1, args.iterations):
-        n = "hltParticleFlowRecHitHBHE%02d" % i
-        setattr(process, n, process.hltParticleFlowRecHitHBHE.clone())
-        path += getattr(process, n)
-    process.HBHEPFCPUGPUTask = cms.Path(path)
-else:
-    path = process.hltParticleFlowRecHitToSoA      # Convert legacy CaloRecHits to SoA and copy to device
-    path += process.hltParticleFlowPFRecHitAlpaka  # Construct PFRecHits on device
-    for i in range(1, args.iterations):
-        n = "hltParticleFlowPFRecHitAlpaka%02d" % i
-        setattr(process, n, process.hltParticleFlowPFRecHitAlpaka.clone())
-        path += getattr(process, n)
-    process.HBHEPFCPUGPUTask = cms.Path(path)
+process.HBHEPFCPUGPUTask = cms.Path(
+    #process.hltHcalDigis
+    #+process.hltHbherecoLegacy
+)
 process.schedule = cms.Schedule(process.HBHEPFCPUGPUTask)
 process.schedule.extend([process.endjob_step,process.FEVTDEBUGHLToutput_step])
 
-process.options.numberOfThreads = cms.untracked.uint32(args.threads)
+process.options.numberOfThreads = cms.untracked.uint32(32)

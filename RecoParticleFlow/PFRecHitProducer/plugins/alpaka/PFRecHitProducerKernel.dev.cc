@@ -19,7 +19,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
                                   uint32_t* __restrict__ num_pfRecHits) const {
       // Strided loop over CaloRecHits
       for (int32_t i : cms::alpakatools::elements_with_stride(acc, recHits.metadata().size())) {
-        // Check energy thresholds (specialised for HCAL/ECAL)
+        // Check energy thresholds/quality cuts (specialised for HCAL/ECAL)
         if(!ApplyCuts(recHits[i], params))
           continue;
 
@@ -32,12 +32,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
         ConstructPFRecHit(pfRecHits[j], recHits[i]);
 
         // Fill denseId -> pfRecHit index map
-        const uint32_t denseId = CAL::detId2denseId(pfRecHits.detId(j)) ;
-        if(denseId <= CAL::SIZE)
-          denseId2pfRecHit[denseId] = j;
-        else
-          printf("detId %u leads to invalid denseId %u. Allowed range [%u,%u)\n",
-            pfRecHits.detId(j), denseId, 0, CAL::SIZE);
+        denseId2pfRecHit[CAL::detId2denseId(pfRecHits.detId(j))] = j;
       }
     }
 

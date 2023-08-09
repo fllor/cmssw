@@ -32,8 +32,8 @@ process.maxEvents = cms.untracked.PSet(
 
 # Input source
 process.source = cms.Source("PoolSource",
-    #fileNames = cms.untracked.vstring('file:/data/user/florkows/hcal_recHits.root'),
-    fileNames = cms.untracked.vstring('file:/data/user/florkows/hcal_recHits_uncompressed.root'),
+    #fileNames = cms.untracked.vstring('file:/data/user/florkows/ecal_recHits.root'),
+    fileNames = cms.untracked.vstring('file:/data/user/florkows/ecal_recHits_uncompressed.root'),
     secondaryFileNames = cms.untracked.vstring()
 )
 
@@ -166,38 +166,39 @@ process.maxEvents.input = args.events
 #####################################
 ##    Legacy PFRecHit producer     ##
 #####################################
-process.hltParticleFlowRecHitHBHE = cms.EDProducer("PFRecHitProducer",
-    navigator = cms.PSet(
-        hcalEnums = cms.vint32(1, 2),
-        name = cms.string('PFRecHitHCALDenseIdNavigator')
+qualityTestsECAL = cms.VPSet(
+    cms.PSet(
+        name = cms.string("PFRecHitQTestDBThreshold"),
+        applySelectionsToAllCrystals=cms.bool(True),
     ),
-    producers = cms.VPSet(cms.PSet(
-        name = cms.string('PFHBHERecHitCreator'),
-        qualityTests = cms.VPSet(
-            cms.PSet(
-                cuts = cms.VPSet(
-                    cms.PSet(
-                        depth = cms.vint32(1, 2, 3, 4),
-                        detectorEnum = cms.int32(1),
-                        threshold = cms.vdouble(0.1, 0.2, 0.3, 0.3)
-                    ),
-                    cms.PSet(
-                        depth = cms.vint32(1, 2, 3, 4, 5, 6, 7),
-                        detectorEnum = cms.int32(2),
-                        threshold = cms.vdouble(0.1, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2)
-                    )
-                ),
-                name = cms.string('PFRecHitQTestHCALThresholdVsDepth')
-            ),
-            cms.PSet(
-                cleaningThresholds = cms.vdouble(0.0),
-                flags = cms.vstring('Standard'),
-                maxSeverities = cms.vint32(11),
-                name = cms.string('PFRecHitQTestHCALChannel')
-            )
-        ),
-        src = cms.InputTag("hltHbhereco")
-    ))
+    cms.PSet(
+        name = cms.string("PFRecHitQTestECAL"),
+        cleaningThreshold = cms.double(2.0),
+        timingCleaning = cms.bool(True),
+        topologicalCleaning = cms.bool(True),
+        skipTTRecoveredHits = cms.bool(True)
+    )
+)
+process.hltParticleFlowRecHitECAL = cms.EDProducer("PFRecHitProducer",
+    navigator = cms.PSet(
+        name = cms.string("PFRecHitECALNavigator"),
+        barrel = cms.PSet( ),
+        endcap = cms.PSet( )
+    ),
+    producers = cms.VPSet(
+          cms.PSet(
+            name = cms.string("PFEBRecHitCreator"),
+            src  = cms.InputTag("hltEcalRecHit","EcalRecHitsEB"),
+            srFlags = cms.InputTag(""),
+            qualityTests = qualityTestsECAL
+          ),
+          cms.PSet(
+            name = cms.string("PFEERecHitCreator"),
+            src  = cms.InputTag("hltEcalRecHit","EcalRecHitsEE"),
+            srFlags = cms.InputTag(""),
+            qualityTests = qualityTestsECAL
+          )
+    )
 )
 
 
@@ -219,32 +220,37 @@ print("Selected backend:", backend)
 
 if backend != "legacy":
     # Convert legacy CaloRecHits to CaloRecHitSoA
-    process.hltParticleFlowRecHitToSoA = cms.EDProducer(alpaka_backend_str % "HCALRecHitSoAProducer",
-        src = cms.InputTag("hltHbhereco"),
+    process.hltParticleFlowRecHitEBToSoA = cms.EDProducer(alpaka_backend_str % "ECALRecHitSoAProducer",
+        src = cms.InputTag("hltEcalRecHit","EcalRecHitsEB"),
+        synchronise = cms.bool(args.synchronise)
+    )
+    process.hltParticleFlowRecHitEEToSoA = cms.EDProducer(alpaka_backend_str % "ECALRecHitSoAProducer",
+        src = cms.InputTag("hltEcalRecHit","EcalRecHitsEE"),
         synchronise = cms.bool(args.synchronise)
     )
 
     # Construct PFRecHitsSoA
     process.jobConfAlpakaRcdESSource = cms.ESSource('EmptyESSource',
-        recordName = cms.string('PFRecHitHCALParamsRecord'),
+        recordName = cms.string('PFRecHitECALParamsRecord'),
         iovIsRunNotTime = cms.bool(True),
         firstValid = cms.vuint32(1)
     )
-    process.pfRecHitHBHETopologyAlpakaESRcdESSource = cms.ESSource('EmptyESSource',
-    recordName = cms.string('PFRecHitHCALTopologyRecord'),
+    process.pfRecHitECALTopologyAlpakaESRcdESSource = cms.ESSource('EmptyESSource',
+    recordName = cms.string('PFRecHitECALTopologyRecord'),
     iovIsRunNotTime = cms.bool(True),
     firstValid = cms.vuint32(1)
     )
-    process.hltParticleFlowRecHitParamsESProducer = cms.ESProducer(alpaka_backend_str % "PFRecHitHCALParamsESProducer",
-        energyThresholdsHB = cms.vdouble( 0.1, 0.2, 0.3, 0.3 ),
-        energyThresholdsHE = cms.vdouble( 0.1, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2 )
-    )
-    process.hltParticleFlowRecHitTopologyESProducer = cms.ESProducer(alpaka_backend_str % "PFRecHitHCALTopologyESProducer")
-    process.hltParticleFlowPFRecHitAlpaka = cms.EDProducer(alpaka_backend_str % "PFRecHitProducerAlpakaHCAL",
+    process.hltParticleFlowRecHitParamsESProducer = cms.ESProducer(alpaka_backend_str % "PFRecHitECALParamsESProducer")
+    process.hltParticleFlowRecHitTopologyESProducer = cms.ESProducer(alpaka_backend_str % "PFRecHitECALTopologyESProducer")
+    process.hltParticleFlowPFRecHitAlpaka = cms.EDProducer(alpaka_backend_str % "PFRecHitProducerAlpakaECAL",
         producers = cms.VPSet(
             cms.PSet(
-                src = cms.InputTag("hltParticleFlowRecHitToSoA"),
-                params = cms.ESInputTag("hltParticleFlowRecHitParamsESProducer:"),
+                src = cms.InputTag("hltParticleFlowRecHitEBToSoA"),
+                params = cms.ESInputTag("hltParticleFlowRecHitParamsESProducer:")
+            ),
+            cms.PSet(
+                src = cms.InputTag("hltParticleFlowRecHitEEToSoA"),
+                params = cms.ESInputTag("hltParticleFlowRecHitParamsESProducer:")
             )
         ),
         topology = cms.ESInputTag("hltParticleFlowRecHitTopologyESProducer:"),
@@ -267,14 +273,15 @@ process.FEVTDEBUGHLToutput.outputCommands = cms.untracked.vstring('drop *_*_*_*'
 
 # Path/sequence definitions
 if backend == "legacy":
-    path = process.hltParticleFlowRecHitHBHE
+    path = process.hltParticleFlowRecHitECAL
     for i in range(1, args.iterations):
-        n = "hltParticleFlowRecHitHBHE%02d" % i
-        setattr(process, n, process.hltParticleFlowRecHitHBHE.clone())
+        n = "hltParticleFlowRecHitECAL%02d" % i
+        setattr(process, n, process.hltParticleFlowRecHitECAL.clone())
         path += getattr(process, n)
     process.HBHEPFCPUGPUTask = cms.Path(path)
 else:
-    path = process.hltParticleFlowRecHitToSoA      # Convert legacy CaloRecHits to SoA and copy to device
+    path = process.hltParticleFlowRecHitEBToSoA    # Convert legacy CaloRecHits to SoA and copy to device
+    path += process.hltParticleFlowRecHitEEToSoA
     path += process.hltParticleFlowPFRecHitAlpaka  # Construct PFRecHits on device
     for i in range(1, args.iterations):
         n = "hltParticleFlowPFRecHitAlpaka%02d" % i

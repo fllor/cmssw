@@ -12,8 +12,6 @@
 #include <utility>
 #include <vector>
 
-#define DEBUG false
-
 namespace ALPAKA_ACCELERATOR_NAMESPACE {
   using namespace ParticleFlowRecHitProducerAlpaka;
 
@@ -25,7 +23,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
       pfRecHitsToken(produces()),
       synchronise(config.getParameter<bool>("synchronise"))
     {
-      std::vector<edm::ParameterSet> producers = config.getParameter<std::vector<edm::ParameterSet>>("producers");
+      const std::vector<edm::ParameterSet> producers = config.getParameter<std::vector<edm::ParameterSet>>("producers");
       recHitsToken.reserve(producers.size());
       for(const edm::ParameterSet& producer : producers) {
         recHitsToken.emplace_back(
