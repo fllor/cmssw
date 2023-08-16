@@ -19,24 +19,25 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
   public:
     template <typename TAcc, typename = std::enable_if_t<alpaka::isAccelerator<TAcc>>>
     ALPAKA_FN_ACC void operator()(TAcc const& acc,
-      PFRecHitHCALParamsDeviceCollection::ConstView params,
-      PFRecHitHCALTopologyDeviceCollection::ConstView topo) const {
+                                  PFRecHitHCALParamsDeviceCollection::ConstView params,
+                                  PFRecHitHCALTopologyDeviceCollection::ConstView topo) const {
       // global index of the thread within the grid
       const int32_t thread = alpaka::getIdx<alpaka::Grid, alpaka::Threads>(acc)[0u];
 
       if (thread == 0) {
         auto const enThresh = params.energyThresholds();
         for (uint32_t idx = 0; idx < 4; ++idx)
-          printf("PFRecHit EnergyThreshold HB[depth=%d] = %8.4f\n", 1+idx, enThresh[idx]);
+          printf("PFRecHit EnergyThreshold HB[depth=%d] = %8.4f\n", 1 + idx, enThresh[idx]);
         for (uint32_t idx = 0; idx < 7; ++idx)
-          printf("PFRecHit EnergyThreshold HE[depth=%d] = %8.4f\n", 1+idx, enThresh[idx+4]);
+          printf("PFRecHit EnergyThreshold HE[depth=%d] = %8.4f\n", 1 + idx, enThresh[idx + 4]);
       }
     }
   };
 
   void TestAlgo::printPFRecHitHCALESData(Queue& queue,
-    PFRecHitHCALParamsDeviceCollection const& esParams, PFRecHitHCALTopologyDeviceCollection const& esTopo) const {
-    auto workDiv = make_workdiv<Acc1D>(1,1);
+                                         PFRecHitHCALParamsDeviceCollection const& esParams,
+                                         PFRecHitHCALTopologyDeviceCollection const& esTopo) const {
+    auto workDiv = make_workdiv<Acc1D>(1, 1);
     alpaka::exec<Acc1D>(queue, workDiv, PrintPFRecHitHCALESDataKernel{}, esParams.const_view(), esTopo.const_view());
   }
 

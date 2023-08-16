@@ -7,6 +7,6 @@
 namespace reco {
   using PFRecHitHCALParamsHostCollection = PortableHostCollection<PFRecHitHCALParamsSoA>;
   using PFRecHitECALParamsHostCollection = PortableHostCollection<PFRecHitECALParamsSoA>;
-}
+}  // namespace reco
 
 #endif

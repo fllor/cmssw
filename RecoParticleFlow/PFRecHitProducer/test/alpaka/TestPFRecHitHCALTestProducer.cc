@@ -18,9 +18,9 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
 
   class TestPFRecHitHCALTestProducer : public stream::EDProducer<> {
   public:
-    TestPFRecHitHCALTestProducer(edm::ParameterSet const& config) :
-      esParamsToken_{esConsumes(config.getParameter<edm::ESInputTag>("pfRecHitParams"))},
-      esTopoToken_{esConsumes(config.getParameter<edm::ESInputTag>("pfRecHitTopology"))} {
+    TestPFRecHitHCALTestProducer(edm::ParameterSet const& config)
+        : esParamsToken_{esConsumes(config.getParameter<edm::ESInputTag>("pfRecHitParams"))},
+          esTopoToken_{esConsumes(config.getParameter<edm::ESInputTag>("pfRecHitTopology"))} {
       devicePutToken_ = produces("");
     }
 

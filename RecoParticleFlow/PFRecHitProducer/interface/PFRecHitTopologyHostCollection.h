@@ -7,6 +7,6 @@
 namespace reco {
   using PFRecHitHCALTopologyHostCollection = PortableHostCollection<PFRecHitHCALTopologySoA>;
   using PFRecHitECALTopologyHostCollection = PortableHostCollection<PFRecHitECALTopologySoA>;
-}
+}  // namespace reco
 
 #endif

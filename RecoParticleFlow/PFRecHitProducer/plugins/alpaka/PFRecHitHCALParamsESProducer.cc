@@ -8,13 +8,14 @@
 #include <array>
 
 namespace ALPAKA_ACCELERATOR_NAMESPACE {
-  using namespace  ParticleFlowRecHitProducerAlpaka;
+  using namespace ParticleFlowRecHitProducerAlpaka;
 
   class PFRecHitHCALParamsESProducer : public ESProducer {
   public:
-    PFRecHitHCALParamsESProducer(edm::ParameterSet const& iConfig) : ESProducer(iConfig),
-        energyThresholdsHB_(iConfig.getParameter<std::array<double, HCAL::maxDepthHB>>("energyThresholdsHB")),
-        energyThresholdsHE_(iConfig.getParameter<std::array<double, HCAL::maxDepthHE>>("energyThresholdsHE")) {
+    PFRecHitHCALParamsESProducer(edm::ParameterSet const& iConfig)
+        : ESProducer(iConfig),
+          energyThresholdsHB_(iConfig.getParameter<std::array<double, HCAL::maxDepthHB>>("energyThresholdsHB")),
+          energyThresholdsHE_(iConfig.getParameter<std::array<double, HCAL::maxDepthHE>>("energyThresholdsHE")) {
       setWhatProduced(this);
     }
 
@@ -27,12 +28,13 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
     }
 
     std::unique_ptr<reco::PFRecHitHCALParamsHostCollection> produce(PFRecHitHCALParamsRecord const& iRecord) {
-      auto product = std::make_unique<reco::PFRecHitHCALParamsHostCollection>(HCAL::maxDepthHB + HCAL::maxDepthHE, cms::alpakatools::host());
+      auto product = std::make_unique<reco::PFRecHitHCALParamsHostCollection>(HCAL::maxDepthHB + HCAL::maxDepthHE,
+                                                                              cms::alpakatools::host());
       for (uint32_t idx = 0; idx < HCAL::maxDepthHB; ++idx) {
         product->view().energyThresholds()[idx] = energyThresholdsHB_[idx];
       }
       for (uint32_t idx = 0; idx < HCAL::maxDepthHE; ++idx) {
-        product->view().energyThresholds()[idx+HCAL::maxDepthHB] = energyThresholdsHE_[idx];
+        product->view().energyThresholds()[idx + HCAL::maxDepthHB] = energyThresholdsHE_[idx];
       }
       return product;
     }

@@ -17,26 +17,24 @@
 namespace ALPAKA_ACCELERATOR_NAMESPACE {
   using namespace ParticleFlowRecHitProducerAlpaka;
 
-  template<typename CAL>
+  template <typename CAL>
   class CaloRecHitSoAProducer : public global::EDProducer<> {
   public:
-    CaloRecHitSoAProducer(edm::ParameterSet const& config) :
-      recHitsToken(consumes(config.getParameter<edm::InputTag>("src"))),
-      deviceToken(produces()),
-      synchronise(config.getParameter<bool>("synchronise"))
-    {}
+    CaloRecHitSoAProducer(edm::ParameterSet const& config)
+        : recHitsToken(consumes(config.getParameter<edm::InputTag>("src"))),
+          deviceToken(produces()),
+          synchronise(config.getParameter<bool>("synchronise")) {}
 
     void produce(edm::StreamID sid, device::Event& event, device::EventSetup const&) const override {
       const edm::SortedCollection<typename CAL::CaloRecHitType>& recHits = event.get(recHitsToken);
       const int32_t num_recHits = recHits.size();
-      if(DEBUG)
+      if (DEBUG)
         printf("Found %d recHits\n", num_recHits);
 
       reco::CaloRecHitHostCollection hostProduct{num_recHits, event.queue()};
       auto& view = hostProduct.view();
 
-      for(int i = 0; i < num_recHits; i++)
-      {
+      for (int i = 0; i < num_recHits; i++) {
         ConvertRecHit(view[i], recHits[i]);
 
         if (DEBUG && i < 10)
@@ -45,7 +43,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
 
       CaloRecHitDeviceCollection deviceProduct{num_recHits, event.queue()};
       alpaka::memcpy(event.queue(), deviceProduct.buffer(), hostProduct.buffer());
-      if(synchronise)
+      if (synchronise)
         alpaka::wait(event.queue());
       event.emplace(deviceToken, std::move(deviceProduct));
     }
@@ -62,27 +60,28 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
     const device::EDPutToken<CaloRecHitDeviceCollection> deviceToken;
     const bool synchronise;
 
-    static void ConvertRecHit(reco::CaloRecHitHostCollection::View::element to, const typename CAL::CaloRecHitType& from);
+    static void ConvertRecHit(reco::CaloRecHitHostCollection::View::element to,
+                              const typename CAL::CaloRecHitType& from);
   };
 
-  template<>
-  void CaloRecHitSoAProducer<HCAL>::ConvertRecHit(reco::CaloRecHitHostCollection::View::element to, const HBHERecHit& from)
-  {
+  template <>
+  void CaloRecHitSoAProducer<HCAL>::ConvertRecHit(reco::CaloRecHitHostCollection::View::element to,
+                                                  const HBHERecHit& from) {
     // Fill SoA from HCAL rec hit
-    to.detId()  = from.id().rawId();
+    to.detId() = from.id().rawId();
     to.energy() = from.energy();
-    to.time()   = from.time();
-    to.flags()  = from.flags();
+    to.time() = from.time();
+    to.flags() = from.flags();
   }
 
-  template<>
-  void CaloRecHitSoAProducer<ECAL>::ConvertRecHit(reco::CaloRecHitHostCollection::View::element to, const EcalRecHit& from)
-  {
+  template <>
+  void CaloRecHitSoAProducer<ECAL>::ConvertRecHit(reco::CaloRecHitHostCollection::View::element to,
+                                                  const EcalRecHit& from) {
     // Fill SoA from ECAL rec hit
-    to.detId()  = from.id().rawId();
+    to.detId() = from.id().rawId();
     to.energy() = from.energy();
-    to.time()   = from.time();
-    to.flags()  = from.flagsBits();
+    to.time() = from.time();
+    to.flags() = from.flagsBits();
   }
 
   using HCALRecHitSoAProducer = CaloRecHitSoAProducer<HCAL>;

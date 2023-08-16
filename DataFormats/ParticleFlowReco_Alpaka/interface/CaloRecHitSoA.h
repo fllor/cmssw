@@ -11,13 +11,12 @@
 namespace reco {
 
   GENERATE_SOA_LAYOUT(CaloRecHitSoALayout,
-    SOA_COLUMN(uint32_t, detId),
-    SOA_COLUMN(float, energy),
-    SOA_COLUMN(float, time),
-    SOA_COLUMN(uint32_t, flags)
-  )
+                      SOA_COLUMN(uint32_t, detId),
+                      SOA_COLUMN(float, energy),
+                      SOA_COLUMN(float, time),
+                      SOA_COLUMN(uint32_t, flags))
 
   using CaloRecHitSoA = CaloRecHitSoALayout<>;
-}
+}  // namespace reco
 
 #endif

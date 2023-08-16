@@ -23,6 +23,6 @@ namespace reco {
 
   using PFRecHitHCALTopologySoA = PFRecHitHCALTopologySoALayout<>;
   using PFRecHitECALTopologySoA = PFRecHitECALTopologySoALayout<>;
-}
+}  // namespace reco
 
 #endif

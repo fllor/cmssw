@@ -7,6 +7,6 @@
 namespace ALPAKA_ACCELERATOR_NAMESPACE {
   using PFRecHitHCALTopologyDeviceCollection = PortableCollection<reco::PFRecHitHCALTopologySoA>;
   using PFRecHitECALTopologyDeviceCollection = PortableCollection<reco::PFRecHitECALTopologySoA>;
-}
+}  // namespace ALPAKA_ACCELERATOR_NAMESPACE
 
 #endif

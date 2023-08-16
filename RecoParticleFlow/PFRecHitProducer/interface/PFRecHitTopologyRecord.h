@@ -6,8 +6,12 @@
 #include "Geometry/Records/interface/CaloGeometryRecord.h"
 #include "Geometry/Records/interface/HcalRecNumberingRecord.h"
 
-class PFRecHitHCALTopologyRecord : public edm::eventsetup::DependentRecordImplementation<PFRecHitHCALTopologyRecord, edm::mpl::Vector<HcalRecNumberingRecord, CaloGeometryRecord>> {};
+class PFRecHitHCALTopologyRecord : public edm::eventsetup::DependentRecordImplementation<
+                                       PFRecHitHCALTopologyRecord,
+                                       edm::mpl::Vector<HcalRecNumberingRecord, CaloGeometryRecord>> {};
 
-class PFRecHitECALTopologyRecord : public edm::eventsetup::DependentRecordImplementation<PFRecHitECALTopologyRecord, edm::mpl::Vector<CaloGeometryRecord>> {};
+class PFRecHitECALTopologyRecord
+    : public edm::eventsetup::DependentRecordImplementation<PFRecHitECALTopologyRecord,
+                                                            edm::mpl::Vector<CaloGeometryRecord>> {};
 
-#endif // RecoParticleFlow_PFRecHitProducer_TopologyRecord_h
+#endif  // RecoParticleFlow_PFRecHitProducer_TopologyRecord_h

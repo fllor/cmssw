@@ -7,6 +7,6 @@
 namespace ALPAKA_ACCELERATOR_NAMESPACE {
   using PFRecHitHCALParamsDeviceCollection = PortableCollection<reco::PFRecHitHCALParamsSoA>;
   using PFRecHitECALParamsDeviceCollection = PortableCollection<reco::PFRecHitECALParamsSoA>;
-}
+}  // namespace ALPAKA_ACCELERATOR_NAMESPACE
 
 #endif

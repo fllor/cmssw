@@ -7,7 +7,7 @@
 #include "RecoParticleFlow/PFRecHitProducer/interface/alpaka/CalorimeterDefinitions.h"
 
 namespace ALPAKA_ACCELERATOR_NAMESPACE {
-  template<typename CAL>
+  template <typename CAL>
   class PFRecHitProducerKernel {
   public:
     PFRecHitProducerKernel(Queue& queue);
@@ -17,14 +17,14 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
 
     // Run kernel: apply filters to rec hits and construct PF rec hits
     void process_rec_hits(Queue& queue,
-      const CaloRecHitDeviceCollection& recHits,
-      const typename CAL::ParameterType& params,
-      PFRecHitDeviceCollection& pfRecHits);
+                          const CaloRecHitDeviceCollection& recHits,
+                          const typename CAL::ParameterType& params,
+                          PFRecHitDeviceCollection& pfRecHits);
 
     // Run kernel: Associate topology information (position, neighbours)
     void associate_topology_info(Queue& queue,
-      const typename CAL::TopologyTypeDevice& topology,
-      PFRecHitDeviceCollection& pfRecHits);
+                                 const typename CAL::TopologyTypeDevice& topology,
+                                 PFRecHitDeviceCollection& pfRecHits);
 
   private:
     cms::alpakatools::device_buffer<Device, uint32_t[]> denseId2pfRecHit;
@@ -34,4 +34,4 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
 
 }  // namespace ALPAKA_ACCELERATOR_NAMESPACE
 
-#endif 
+#endif
