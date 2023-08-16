@@ -9,6 +9,7 @@
 #include "FWCore/Utilities/interface/InputTag.h"
 #include "DataFormats/Common/interface/Handle.h"
 #include "DataFormats/HcalDetId/interface/HcalSubdetector.h"
+#include "DataFormats/EcalDetId/interface/EcalSubdetector.h"
 #include "Geometry/CaloGeometry/interface/CaloGeometry.h"
 #include "Geometry/CaloGeometry/interface/CaloSubdetectorGeometry.h"
 #include "Geometry/Records/interface/CaloGeometryRecord.h"
@@ -42,8 +43,10 @@ private:
 
 void LegacyPFRecHitProducer::beginRun(edm::Run const&, const edm::EventSetup& setup) {
   geoHandle = setup.getHandle(geomToken);
-  hcalGeo[PFLayer::HCAL_BARREL1] = geoHandle->getSubdetectorGeometry(DetId::Hcal, HcalBarrel);
-  hcalGeo[PFLayer::HCAL_ENDCAP] = geoHandle->getSubdetectorGeometry(DetId::Hcal, HcalEndcap);
+  hcalGeo[PFLayer::HCAL_BARREL1] = geoHandle->getSubdetectorGeometry(DetId::Hcal, HcalSubdetector::HcalBarrel);
+  hcalGeo[PFLayer::HCAL_ENDCAP] = geoHandle->getSubdetectorGeometry(DetId::Hcal, HcalSubdetector::HcalEndcap);
+  hcalGeo[PFLayer::ECAL_BARREL] = geoHandle->getSubdetectorGeometry(DetId::Ecal, EcalSubdetector::EcalBarrel);
+  hcalGeo[PFLayer::ECAL_ENDCAP] = geoHandle->getSubdetectorGeometry(DetId::Ecal, EcalSubdetector::EcalEndcap);
 }
 
 void LegacyPFRecHitProducer::produce(edm::Event& event, const edm::EventSetup& setup) {

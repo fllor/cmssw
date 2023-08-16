@@ -32,6 +32,8 @@ process.maxEvents = cms.untracked.PSet(
 )
 
 # Input source
+# Need to use a file that contains HCAL/ECAL hits. Verify using:
+# root root://eoscms.cern.ch//eos/cms/store/relval/CMSSW_13_0_0/RelValTTbar_14TeV/GEN-SIM-DIGI-RAW/PU_130X_mcRun3_2022_realistic_v2_HS-v4/2590000/0088b51b-0cda-40f2-95fc-590f446624ee.root -e 'Events->Print()' -q | grep -E "hltHbhereco|hltEcalRecHit"
 process.source = cms.Source("PoolSource",
     fileNames = cms.untracked.vstring('/store/relval/CMSSW_13_0_0/RelValTTbar_14TeV/GEN-SIM-DIGI-RAW/PU_130X_mcRun3_2022_realistic_v2_HS-v4/2590000/0088b51b-0cda-40f2-95fc-590f446624ee.root'),
     secondaryFileNames = cms.untracked.vstring()
@@ -74,7 +76,6 @@ process.configurationMetadata = cms.untracked.PSet(
 )
 
 # Output definition
-
 process.FEVTDEBUGHLToutput = cms.OutputModule("PoolOutputModule",
     dataset = cms.untracked.PSet(
         dataTier = cms.untracked.string('GEN-SIM-DIGI-RAW'),
@@ -84,8 +85,6 @@ process.FEVTDEBUGHLToutput = cms.OutputModule("PoolOutputModule",
     outputCommands = process.FEVTDEBUGHLTEventContent.outputCommands,
     splitLevel = cms.untracked.int32(0)
 )
-
-# Additional output definition
 
 # Other statements
 from HLTrigger.Configuration.CustomConfigs import ProcessName
@@ -104,33 +103,13 @@ process.schedule.extend([process.endjob_step,process.FEVTDEBUGHLToutput_step])
 from PhysicsTools.PatAlgos.tools.helpers import associatePatAlgosToolsTask
 associatePatAlgosToolsTask(process)
 
-# customisation of the process.
-
-# Automatic addition of the customisation function from HLTrigger.Configuration.customizeHLTforPatatrack
-#from HLTrigger.Configuration.customizeHLTforPatatrack import customizeHLTforPatatrack, customiseCommon, customiseHcalLocalReconstruction
-
-# only enable Hcal GPU
-#process = customiseCommon(process)
-#process = customiseHcalLocalReconstruction(process)
-
-#call to customisation function customizeHLTforPatatrack imported from HLTrigger.Configuration.customizeHLTforPatatrack
-#process = customizeHLTforPatatrack(process)
-
-# Automatic addition of the customisation function from HLTrigger.Configuration.customizeHLTforMC
+# customisation of the process
 from HLTrigger.Configuration.customizeHLTforMC import customizeHLTforMC
-
-#call to customisation function customizeHLTforMC imported from HLTrigger.Configuration.customizeHLTforMC
 process = customizeHLTforMC(process)
-
-# End of customisation functions
-
-
-# Customisation from command line
 
 # Add early deletion of temporary data products to reduce peak memory need
 from Configuration.StandardSequences.earlyDeleteSettings_cff import customiseEarlyDelete
 process = customiseEarlyDelete(process)
-# End adding early deletion
 
 process.load( "HLTrigger.Timer.FastTimerService_cfi" )
 if 'MessageLogger' in process.__dict__:
@@ -143,9 +122,9 @@ if 'MessageLogger' in process.__dict__:
     process.MessageLogger.cerr.FastReport = cms.untracked.PSet( limit = cms.untracked.int32( 10000000 ) )
 
 
-
-
-
+#####################################
+##   Read command-line arguments   ##
+#####################################
 import sys
 import argparse
 parser = argparse.ArgumentParser(prog=sys.argv[0], description='Test and validation of PFRecHitProducer with Alpaka')
@@ -176,7 +155,6 @@ alpaka_backends = {
 }
 assert args.backend.lower() in alpaka_backends, "Invalid backend"
 alpaka_backend_str = alpaka_backends[args.backend.lower()]
-
 
 
 #####################################
@@ -318,7 +296,7 @@ else:  # ecal
     )
 
 # Convert Alpaka PFRecHits to legacy format (for validation)
-process.htlParticleFlowAlpakaToLegacyPFRecHits = cms.EDProducer("LegacyPFRecHitProducer",
+process.hltParticleFlowAlpakaToLegacyPFRecHits = cms.EDProducer("LegacyPFRecHitProducer",
     src = cms.InputTag("hltParticleFlowPFRecHitAlpaka")
 )
 
@@ -341,9 +319,9 @@ process.hltParticleFlowPFRecHitComparison = DQMEDAnalyzer("PFRecHitProducerTest"
 )
 
 # Validate legacy format from legacy module vs legacy format from Alpaka module
-process.htlParticleFlowAlpakaToLegacyPFRecHitsComparison1 = DQMEDAnalyzer("PFRecHitProducerTest",
+process.hltParticleFlowAlpakaToLegacyPFRecHitsComparison1 = DQMEDAnalyzer("PFRecHitProducerTest",
     pfRecHitsSource1 = cms.untracked.InputTag("hltParticleFlowRecHit"),
-    pfRecHitsSource2 = cms.untracked.InputTag("htlParticleFlowAlpakaToLegacyPFRecHits"),
+    pfRecHitsSource2 = cms.untracked.InputTag("hltParticleFlowAlpakaToLegacyPFRecHits"),
     pfRecHitsType1 = cms.untracked.string("legacy"),
     pfRecHitsType2 = cms.untracked.string("legacy"),
     title = cms.untracked.string("Legacy vs Legacy-from-Alpaka"),
@@ -353,9 +331,9 @@ process.htlParticleFlowAlpakaToLegacyPFRecHitsComparison1 = DQMEDAnalyzer("PFRec
 
 # Validate SoA format from Alpaka module vs legacy format from Alpaka module
 # This tests the SoA-to-legacy conversion module
-process.htlParticleFlowAlpakaToLegacyPFRecHitsComparison2 = DQMEDAnalyzer("PFRecHitProducerTest",
+process.hltParticleFlowAlpakaToLegacyPFRecHitsComparison2 = DQMEDAnalyzer("PFRecHitProducerTest",
     pfRecHitsSource1 = cms.untracked.InputTag("hltParticleFlowPFRecHitAlpaka"),
-    pfRecHitsSource2 = cms.untracked.InputTag("htlParticleFlowAlpakaToLegacyPFRecHits"),
+    pfRecHitsSource2 = cms.untracked.InputTag("hltParticleFlowAlpakaToLegacyPFRecHits"),
     pfRecHitsType1 = cms.untracked.string("alpaka"),
     pfRecHitsType2 = cms.untracked.string("legacy"),
     title = cms.untracked.string("Alpaka vs Legacy-from-Alpaka"),
@@ -365,26 +343,24 @@ process.htlParticleFlowAlpakaToLegacyPFRecHitsComparison2 = DQMEDAnalyzer("PFRec
 
 # Additional customization
 process.FEVTDEBUGHLToutput.outputCommands = cms.untracked.vstring('drop  *_*_*_*')
-process.FEVTDEBUGHLToutput.outputCommands.append('keep *_*ParticleFlow*HBHE*_*_*')
 process.FEVTDEBUGHLToutput.outputCommands.append('keep *_hltParticleFlowRecHitToSoA_*_*')
 process.FEVTDEBUGHLToutput.outputCommands.append('keep *_hltParticleFlowPFRecHitAlpaka_*_*')
 
 # Path/sequence definitions
-path = process.hltParticleFlowRecHit           # Construct PFRecHits on CPU
+path = process.hltParticleFlowRecHit               # Construct PFRecHits on CPU
 if hcal:
-    path += process.hltParticleFlowRecHitToSoA     # Convert legacy CaloRecHits to SoA and copy to device, HCAL barrel+endcap
+    path += process.hltParticleFlowRecHitToSoA     # Convert legacy calorimeter hits to SoA (HCAL barrel+endcap)
 else:  # ecal
-    path += process.hltParticleFlowRecHitEBToSoA   # Convert legacy CaloRecHits to SoA and copy to device, ECAL barrel
-    path += process.hltParticleFlowRecHitEEToSoA   # Convert legacy CaloRecHits to SoA and copy to device, ECAL endcap
-path += process.hltParticleFlowPFRecHitAlpaka  # Construct PFRecHits on device
+    path += process.hltParticleFlowRecHitEBToSoA   # Convert legacy calorimeter hits to SoA (ECAL barrel)
+    path += process.hltParticleFlowRecHitEEToSoA   # Convert legacy calorimeter hits to SoA (ECAL endcap)
+path += process.hltParticleFlowPFRecHitAlpaka      # Construct PFRecHits SoA
 path += process.hltParticleFlowPFRecHitComparison  # Validate Alpaka vs CPU
-if hcal:
-    path += process.htlParticleFlowAlpakaToLegacyPFRecHits             # Convert Alpaka PFRecHits to legacy format
-    path += process.htlParticleFlowAlpakaToLegacyPFRecHitsComparison1  # Validate legacy-format-from-alpaka vs regular legacy format
-    path += process.htlParticleFlowAlpakaToLegacyPFRecHitsComparison2  # Validate Alpaka format vs legacy-format-from-alpaka
+path += process.hltParticleFlowAlpakaToLegacyPFRecHits             # Convert Alpaka PFRecHits SoA to legacy format
+path += process.hltParticleFlowAlpakaToLegacyPFRecHitsComparison1  # Validate legacy-format-from-alpaka vs regular legacy format
+path += process.hltParticleFlowAlpakaToLegacyPFRecHitsComparison2  # Validate Alpaka format vs legacy-format-from-alpaka
 
-process.HBHEPFCPUGPUTask = cms.Path(path)
-process.schedule = cms.Schedule(process.HBHEPFCPUGPUTask)
+process.PFRecHitAlpakaValidationTask = cms.Path(path)
+process.schedule = cms.Schedule(process.PFRecHitAlpakaValidationTask)
 process.schedule.extend([process.endjob_step,process.FEVTDEBUGHLToutput_step])
 
 process.options.numberOfThreads = cms.untracked.uint32(args.threads)
