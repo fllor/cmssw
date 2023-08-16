@@ -1,21 +1,17 @@
 #include "DQMServices/Core/interface/DQMEDAnalyzer.h"
 #include "DQMServices/Core/interface/DQMStore.h"
 #include "DataFormats/Common/interface/Handle.h"
-#include "DataFormats/Common/interface/SortedCollection.h"
 #include "DataFormats/DetId/interface/DetId.h"
-#include "DataFormats/HcalDetId/interface/HcalDetId.h"
-#include "DataFormats/HcalDetId/interface/HcalSubdetector.h"
 #include "DataFormats/ParticleFlowReco/interface/PFRecHit.h"
 #include "FWCore/Framework/interface/Event.h"
 #include "FWCore/Framework/interface/EventSetup.h"
-#include "FWCore/Framework/interface/Frameworkfwd.h"
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
+#include "FWCore/ParameterSet/interface/allowedValues.h"
 #include "FWCore/ParameterSet/interface/ConfigurationDescriptions.h"
 #include "DataFormats/ParticleFlowReco_Alpaka/interface/CaloRecHitHostCollection.h"
 #include "DataFormats/ParticleFlowReco_Alpaka/interface/PFRecHitHostCollection.h"
 
-#include <cmath>
-#include <iostream>
+#include <cstdio>
 #include <string>
 #include <utility>
 #include <variant>
@@ -29,11 +25,11 @@ public:
   static void fillDescriptions(edm::ConfigurationDescriptions& descriptions);
 
 private:
-  // Define generic types for token, handle and collection, such that origin of PFRecHits can be selected at runtime
-  // Idea is to read desired format from config (pfRecHitsType1/2) and construct token accordingly. Then use handle
+  // Define generic types for token, handle and collection, such that origin of PFRecHits can be selected at runtime.
+  // The idea is to read desired format from config (pfRecHitsType1/2) and construct token accordingly. Then use handle
   // and collection corresponding to token type. Finally, construct GenericPFRecHits from each source, which are
-  // independent of the format. This way this module can be used with to validate any combination of legacy and
-  // Alpaka formats (and possibly CUDA?).
+  // independent of the format. This way, this module can be used to validate any combination of legacy and
+  // Alpaka formats.
   using LegacyToken = edm::EDGetTokenT<reco::PFRecHitCollection>;
   using AlpakaToken = edm::EDGetTokenT<reco::PFRecHitHostCollection>;
   using GenericPFRecHitToken = std::variant<LegacyToken, AlpakaToken>;
@@ -112,11 +108,11 @@ PFRecHitProducerTest::~PFRecHitProducerTest() {
           title.empty() ? "" : "]",
           num_events,
           num_errors,
-          errors[1],
-          errors[2],
-          errors[3],
-          errors[4],
-          errors[5]);
+          errors[1],  // different number of PFRecHits
+          errors[2],  // detId not found
+          errors[3],  // depth,layer,time,energy or pos different
+          errors[4],  // different number of neighbours
+          errors[5]); // neighbours different
 }
 
 void PFRecHitProducerTest::analyze(const edm::Event& event, const edm::EventSetup&) {
@@ -136,7 +132,7 @@ void PFRecHitProducerTest::analyze(const edm::Event& event, const edm::EventSetu
   int error = 0;
   const size_t n = GenericCollectionSize(pfRecHits[0]);
   if (n != GenericCollectionSize(pfRecHits[1]))
-    error = 1;
+    error = 1;  // different number of PFRecHits
   else {
     std::vector<GenericPFRecHit> first, second;
     std::unordered_map<uint32_t, size_t> detId2Idx;  // for second vector
@@ -151,40 +147,34 @@ void PFRecHitProducerTest::analyze(const edm::Event& event, const edm::EventSetu
       error = [&]() {
         const GenericPFRecHit& rh1 = first.at(i);
         if (detId2Idx.find(rh1.detId) == detId2Idx.end())
-          return 2;
+          return 2;  // detId not found
 
         const GenericPFRecHit& rh2 = second.at(detId2Idx.at(rh1.detId));
         assert(rh1.detId == rh2.detId);
         if (rh1.depth != rh2.depth || rh1.layer != rh2.layer || rh1.time != rh2.time || rh1.energy != rh2.energy ||
             rh1.x != rh2.x || rh1.y != rh2.y || rh1.z != rh2.z)
-          return 3;
+          return 3;  // depth,layer,time,energy or pos different
 
         if (rh1.neighbours4.size() != rh2.neighbours4.size() || rh1.neighbours8.size() != rh2.neighbours8.size())
-          return 4;
+          return 4;  // different number of neighbours
 
         for (size_t i = 0; i < rh1.neighbours4.size(); i++)
           if (first.at(rh1.neighbours4[i]).detId != second.at(rh2.neighbours4[i]).detId)
-            return 5;
+            return 5;  // neighbours4 different
         for (size_t i = 0; i < rh1.neighbours8.size(); i++)
           if (first.at(rh1.neighbours8[i]).detId != second.at(rh2.neighbours8[i]).detId)
-            return 5;
+            return 5;  // neighbours8 different
 
-        return 0;
+        return 0;  // no error
       }();
     }
   }
 
-  if (num_events == 0 && dumpFirstEvent)
+  if (dumpFirstEvent && num_events == 0)
     DumpEvent(event, pfRecHits[0], pfRecHits[1]);
 
   if (error) {
     if (dumpFirstError && num_errors == 0) {
-      // Error codes:
-      //  1 different number of PFRecHits
-      //  2 detId not found
-      //  3 depth,layer,time,energy or pos different
-      //  4 different number of neighbours
-      //  5 neighbours different (different order?)
       printf("Error: %d\n", error);
       DumpEvent(event, pfRecHits[0], pfRecHits[1]);
     }
@@ -222,16 +212,26 @@ void PFRecHitProducerTest::DumpEvent(const edm::Event& event,
 
 void PFRecHitProducerTest::fillDescriptions(edm::ConfigurationDescriptions& descriptions) {
   edm::ParameterSetDescription desc;
-  desc.addOptionalUntracked<edm::InputTag>(
-      "caloRecHits");  // CaloRecHitSoA, if supplied, it is dumped alongside the PFRecHits
-  desc.addUntracked<edm::InputTag>("pfRecHitsSource1");        // First PFRecHit list for comparison
-  desc.addUntracked<edm::InputTag>("pfRecHitsSource2");        // Second PFRecHit list for comparison
-  desc.addUntracked<std::string>("pfRecHitsType1", "legacy");  // Format of first PFRecHit list (legacy or alpaka)
-  desc.addUntracked<std::string>("pfRecHitsType2", "alpaka");  // Format of second PFRecHit list (legacy or alpaka)
-  desc.addUntracked<std::string>("title", "");                 // Module name for printout
-  desc.addUntracked<bool>("dumpFirstEvent",
-                          false);  // Dump PFRecHits of first event, regardless of result of comparison
-  desc.addUntracked<bool>("dumpFirstError", false);  // Dump PFRecHits upon first encountered error
+  desc.addOptionalUntracked<edm::InputTag>("caloRecHits")
+    ->setComment("CaloRecHitSoA, if supplied, it is dumped alongside the PFRecHits");
+  desc.addUntracked<edm::InputTag>("pfRecHitsSource1")
+    ->setComment("First PFRecHit list for comparison");
+  desc.addUntracked<edm::InputTag>("pfRecHitsSource2")
+    ->setComment("Second PFRecHit list for comparison");
+  desc.ifValue(edm::ParameterDescription<std::string>("pfRecHitsType1", "legacy", false),
+               edm::allowedValues<std::string>("legacy", "alpaka"))
+  //desc.addUntracked<std::string>("pfRecHitsType1", "legacy")
+    ->setComment("Format of first PFRecHit list (legacy or alpaka)");
+  //desc.addUntracked<std::string>("pfRecHitsType2", "alpaka")
+  desc.ifValue(edm::ParameterDescription<std::string>("pfRecHitsType2", "alpaka", false),
+               edm::allowedValues<std::string>("legacy", "alpaka"))
+    ->setComment("Format of second PFRecHit list (legacy or alpaka)");
+  desc.addUntracked<std::string>("title", "")
+    ->setComment("Module name for printout");
+  desc.addUntracked<bool>("dumpFirstEvent", false)
+    ->setComment("Dump PFRecHits of first event, regardless of result of comparison");
+  desc.addUntracked<bool>("dumpFirstError", false)
+    ->setComment("Dump PFRecHits upon first encountered error");
   descriptions.addDefault(desc);
 }
 
